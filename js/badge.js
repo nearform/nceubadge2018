@@ -200,7 +200,7 @@ Badge.menu = () => {
   "About": ()=>{
    Badge.drawCenter(`-- Nodeconf 2018 --
 
-with @Espruino
+with Espruino Pixl.js
 www.espruino.com
 `);
    wait(e => Badge.menu());
@@ -211,9 +211,10 @@ www.espruino.com
 You can connect to this badge
 with a BLE capable device. Go to
 espruino.com/ide on a Web BLE
-capable browser to start coding!`);
-   g.drawString("Name: Pixl.js " + NRF.getAddress().substr(-5).replace(":", ""), 0, 44);
-   g.drawString("MAC: " + NRF.getAddress(), 0, 50);
+capable browser to start coding!
+
+Name: Pixl.js ${NRF.getAddress().substr(-5).replace(":", "")}
+MAC: ${NRF.getAddress()}`);
    g.flip();
    wait(() => { NRF.sleep(); Badge.menu(); });
    NRF.wake();
