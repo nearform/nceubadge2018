@@ -34,13 +34,31 @@ Badge.hexImage.transparent = 0;
 BTNS = [BTN1,BTN2,BTN3,BTN4];
 // Message types received over BLE
 var MSG = {
-  RESERVED : 0,
-  LED_COLOR: 1,
-  MSG_NEXT: 2,
-  MSG_NOW: 3,
-  MSG_ALERT: 4,
-  MSG_INFO: 5
+  CONTROL: 1,
+  LED_COLOR: 2,
+  MSG_NEXT: 3,
+  MSG_NOW: 4,
+  MSG_ALERT: 5,
+  MSG_INFO: 6
 };
+var ROOMS = [
+  // [Name,X,Y]
+["Unknown"],// 0,
+["McCurdy 12",53,22], // 1,
+["McCurdy 3",76,22], // 2,
+["Maginnes",29,20], // 3,
+["Preassembly",70,41],// 4,
+["Lounge"],//  5,
+["Hotel Bar"],// 6,
+["Restaurant"],// 7,
+["Hotel Checkin"],// 8,
+["McCurdy 1",45,22],// 9,
+["McCurdy 2",61,22],// 10,
+["Preassembly 1",90,41],// 11,
+["Maginnes 1",28,33],// 12,
+["Reception",92,26] // 13
+  ];
+var START_DATE = Date.parse('2018-01-01 00:00:00');
 // Whitelisted BLE broadcasters
 var WHITELIST = [
   "b8:27:eb:31:6f:66 public",
@@ -66,11 +84,18 @@ Badge.reset = () => {
 // --------------------------------------------
 // List of notifications to show
 Badge.notifications = [ /* { text: ..., time: msecs } */];
-
+// The time since Unix Epoch as discovered from Bluetooth
+Badge.bleDate = START_DATE;
+// The time in secs from 'getTime' at which this time was discovered
+Badge.bleDateTime = getTime();
+// Current badge state according to adv data
+Badge.bleState = 0;
+// The place in the conference we're at according to adv data
+Badge.bleRoom = 0; // ROOMS.UNKNOWN
 // --------------------------------------------
 // Bluetooth scanning - usually only done from Badge.menu
 // Emit a BLEx event when the data received changes
-Badge.bleData = [];
+Badge.bleData = []; // of Strings
 Badge.scan = (on) => {
   if (Badge.scanInterval) {
     clearInterval(Badge.scanInterval);
@@ -110,6 +135,13 @@ Badge.scanOnce = (on) => {
 
 // --------------------------------------------
 // Handle badge events
+Badge.on('BLE'+MSG.CONTROL, msgData=>{
+  var d = new DataView(E.toArrayBuffer(msgData));
+  Badge.bleDate = START_DATE+d.getUint32(0,1)*1000;
+  Badge.bleDateTime = getTime();
+  Badge.bleState = d.getUint8(4);
+  Badge.bleRoom = d.getUint8(5);
+});
 Badge.on('BLE'+MSG.MSG_ALERT, msgData=>{
   Badge.alert(msgData);
 });
@@ -227,6 +259,12 @@ Badge.badge = ()=>{
     g.drawRect(0,0,127,h);
     Badge.notifications.forEach((n,i)=>g.drawString(n.text,2,2+i*6));
   }
+  // Draw the current time
+  g.setFontAlign(-1,-1);
+  var date = new Date(Badge.bleDate+getTime()-Badge.bleDateTime);
+  var timeStr = date.toISOString().split("T")[1].substr(0,5);
+  g.drawString(timeStr,0,59);
+  // now write to the screen
   g.flip();
   var delay = 1000;
   if (timeout) clearTimeout(timeout);  
@@ -243,6 +281,38 @@ Badge.badge = ()=>{
 
 // --------------------------------------------
 // Badge Applications (you can add your own)
+Badge.apps["Map"] = function() {
+  var mapImg =  {
+  width : 128, height : 64, bpp : 1,
+  transparent : 0,
+  buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////+AAAAAAAAAAB//4AAAAEAA//8AAAAAAAAQASAAQABAAIRBAAAAAAAAEAEgAAAAQACEQQAAAAAAABABIABAAEAAhEEAAAAAAAAQASAAAABAAIRBRAAAAAAAEAEgAEAAQACHwVQAAAAAABABIAAAAEAAhEF8AAAAAAAQASAAQABAAIRBAAAAAAAAEAEgAAAAQAD8f0QAAAAAABABIABAAEAAgAFEAAAAAAAQASAAAABAAIABfAAAAAAAFVUgAEAAQACAAQAAAAAAABABIAAAAEAAgAF8AAAAAAAQASAAQABAAIABQAAAAAAAEAEgAAAAQACAAXwAAAAAABABIABAAEAAgAEAAAAAAAAQASAAAABAAIABfAAAAAAAEAEgAEAAQACAAVAAAAAAABABIAAAAEAAgAF8AAAAAAAQASAAQABAAIABAAAAAAAAEAEgAAAAQACAAXwAAAAAABqvIABAAEAAgAFQAAAAAAAQBCAAAABAAIABfAAAAAAAEAQgAEAAQACAAQAAAAAAABAEIAAAAEAAgAFAAAAAAAAQBCAAQABAAIABfAAAAAAAEAQgAAAAQACAAUAAAAAAAB/8P/////////8AAAAAAAAQBCAAAAAAAAABPAAAAAAAEAQgAAAAAAAAAUAAAAAAABAEIAAAAAAAAAF8AAAAAAAQBCAAAAAAAAABAAAAAAAAEAQgAAAAAAAAAUQAAAAAAB/8IAAAAAAAAAFUAAAAAAAQACAAAAAAAAABfAAAAAAAEAAgAAAAAAAAAQAAAAAAABAAP/4AAB////8AAAAAAAAT/yACAAAQBACAAAAAAAAAEgEgAgAAEAQAgAAAAAAAABIBIAIAABAEAIAAAAAAAAASASAD///wBACAAAAAAAAAEgEgAAAAAAQAgAAAAAAAABIBIAAAAAAEAIAAAAAAAAASASAAAAAABACAAAAAAAAAEgEgAAAAAAQAgAAAAAAAABIBIAAAAAAEAIAAAAAAAAAT/yAAAAAAB/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAPq7ugAAAAAAAAAAAAAAAAByqSIAAAAAAAAAAAAAAAAAI6kyAAAAAAAAAAAAAAAAAAKpIgAAAAAAAAAAAAAAAAACuTuAAAAAAAAAAAAAA=="))
+};
+  
+  Badge.reset();
+  Badge.scan(1); // ensure up to date data
+  
+  var toggle = false;
+  function draw() {
+    g.clear();
+    g.drawImage(mapImg);
+    
+    var room = ROOMS[Badge.bleRoom];
+    if (room==undefined) room=["Unknown"];
+    g.setFontAlign(0,-1);
+    g.drawString(room[0],64,0);
+    g.setFontAlign(-1,-1);
+    
+    toggle = !toggle;
+    if (room.length>1) {      
+      if (toggle) g.fillCircle(room[1],room[2], 5);
+      else g.drawCircle(room[1],room[2], 5);
+    }
+    g.flip();
+  }
+  draw();
+  setInterval(draw,750);
+  BTNS.forEach(p=>setWatch(Badge.menu,p));
+};
 Badge.apps["Backlight"] = ()=>{
  var menu = { "": { "title": "-- Select Backlight --" } };
  function bl(i) {
@@ -516,7 +586,7 @@ Badge.apps["Flappy Bird"] = () => {
  }
 
  function onFrame() {
-  var buttonState = BTN2.read()||BTN3.read();
+  var buttonState = BTN2.read()||BTN3.read()||(NC.accel().z>0);
 
   g.clear();
   if (!running) {
