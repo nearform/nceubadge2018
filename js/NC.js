@@ -19,6 +19,7 @@ i2c.wa = function(reg,data) {
   this.writeTo(30,reg,data);
 };
 
+//https://www.st.com/resource/en/datasheet/lsm303d.pdf
 function init() {
   i2c.setup({sda:A4,scl:A5});
   // SN3218
@@ -27,11 +28,14 @@ function init() {
   i2c.wl(0x13,[0x3F,0x3F,0x3F]); // led bank 1,2,3
   // LSM303
   if (i2c.ra(15,1)[0]!=73) console.log("LSM303D WHOIS failed");
-  i2c.wa(0x21,0); //ctrl2
-  i2c.wa(0x20,0x57); //ctrl1
-  i2c.wa(0x24,0x64); //ctrl5
-  i2c.wa(0x25,0x20); //ctrl6
-  i2c.wa(0x26,0x00); //ctrl7
+  //i2c.wa(0x1f,0x80) // ctrl0-reset memory
+  i2c.wa(0x20,0x57); //ctrl1 - 50Hz, all 3 axes (what about block data update?)
+  i2c.wa(0x21,0); //ctrl2 - +-2g, no filtering
+  i2c.wa(0x22,0); //ctrl3 -  int1 src
+  i2c.wa(0x23,0); //ctrl4 - int2 src 
+  i2c.wa(0x24,0x10); //ctrl5 - 50Hz magnetometer
+  i2c.wa(0x25,0); //ctrl6 - +-2 gauss magnetometer
+  i2c.wa(0x26,0); //ctrl7 - no filter, continuous conversion
 }
 E.on('init',init);
 init();
