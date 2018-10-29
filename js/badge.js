@@ -2,6 +2,10 @@ var NC = require("NC");
 
 Badge = global.Badge||{};
 Badge.URL = "http://www.espruino.com";
+Badge.settings = {
+  allowScan:true, // Allow scanning?
+  location:true   // send anonymous location data (TODO)
+};
 // User-defined apps
 Badge.apps = Badge.apps||{};
 Badge.patterns = Badge.patterns||{};
@@ -97,6 +101,7 @@ Badge.bleRoom = 0; // ROOMS.UNKNOWN
 // Emit a BLEx event when the data received changes
 Badge.bleData = []; // of Strings
 Badge.scan = (on) => {
+  on&=Badge.settings.allowScan;
   if (Badge.scanInterval) {
     clearInterval(Badge.scanInterval);
     delete Badge.scanInterval;
@@ -106,6 +111,7 @@ Badge.scan = (on) => {
   Badge.scanOnce(on);
 };
 Badge.scanOnce = (on) => {
+  on&=Badge.settings.allowScan;
   if (Badge.scanTimeout) {
     clearTimeout(Badge.scanTimeout);
     delete Badge.scanTimeout;
@@ -326,6 +332,21 @@ Badge.apps["Backlight"] = ()=>{
  for (var i in Badge.patterns) menu[i]=bl(i);
   menu["Back to Badge"]=Badge.badge;
  Badge.defaultPattern=undefined;
+ Badge.reset();
+ Pixl.menu(menu);
+};
+Badge.apps["Privacy"] = firstRun=>{
+ function toggle(setting) {
+   return ()=>{
+     Badge.settings[setting] = !Badge.settings[setting];
+     require("Storage").write("settings", Badge.settings);
+     Badge.apps.Privacy(firstRun);
+   };
+ }
+ var menu = { "": { "title": "-- Privacy Settings --" } };
+ menu["Send Anon. Location : "+(Badge.settings.location?"Yes":"No")]=toggle("location");
+ menu["Get Alerts/Info : "+(Badge.settings.allowScan?"Yes":"No")]=toggle("allowScan");
+ menu[firstRun?"Continue...":"Back to Badge"]=Badge.badge;
  Badge.reset();
  Pixl.menu(menu);
 };
@@ -706,8 +727,16 @@ exit.`,"Bluetooth");
 };
 
 // --------------------------------------------
-// LED patterns
-Badge.patterns.red=()=>{ var n=0;return ()=>{
+// LED patterns - each is [callback, period_in_ms]
+Badge.patterns.simple=()=>{ var n=0;return [()=>{
+  var c = [127,127,127];
+  NC.backlight(c.concat(c,c,c));
+},0];};
+Badge.patterns.dim=()=>{ var n=0;return [()=>{
+  var c = [31,31,31];
+  NC.backlight(c.concat(c,c,c));
+},0];};
+Badge.patterns.red=()=>{ var n=0;return [()=>{
   n+=50;
   if (n>1536)n=0;
   NC.ledTop([0,0,Math.max(255-Math.abs(n-1024),0)]);
@@ -716,8 +745,8 @@ Badge.patterns.red=()=>{ var n=0;return ()=>{
                 0,0,Math.max(255-Math.abs(n-512),0),
                 0,0,Math.max(255-Math.abs(n-384),0),
                 0,0,Math.max(255-Math.abs(n-256),0)]);
-};};
-Badge.patterns.info=()=>{ var n=0;return ()=>{
+},50];};
+Badge.patterns.info=()=>{ var n=0;return [()=>{
   n+=20;
   if (n>3072)n=0;
   var ca = Math.max(127-Math.abs(n-256),0);
@@ -729,8 +758,8 @@ Badge.patterns.info=()=>{ var n=0;return ()=>{
                 ca,ca,ca,
                 ca,ca,ca,
                 cb,cb,cb]);
-};};
-Badge.patterns.rainbow=()=>{ var n=0;return ()=>{
+},50];};
+Badge.patterns.rainbow=()=>{ var n=0;return [()=>{
   n += 0.01;
   NC.backlight(
     E.HSBtoRGB(n,1,1,1).concat(
@@ -740,8 +769,8 @@ Badge.patterns.rainbow=()=>{ var n=0;return ()=>{
    ));
   NC.ledTop(E.HSBtoRGB(n+0.4,1,1,1));
   NC.ledBottom(E.HSBtoRGB(n+0.5,1,1,1));
-};};
-Badge.patterns.hues=()=>{ var n=1000;var hues=[0,0.2,0.4];return ()=>{
+},50];};
+Badge.patterns.hues=()=>{ var n=1000;var hues=[0,0.2,0.4];return [()=>{
   n += 1;
   if (n>10) {
     hues=hues.map(Math.random);
@@ -751,21 +780,31 @@ Badge.patterns.hues=()=>{ var n=1000;var hues=[0,0.2,0.4];return ()=>{
   NC.backlight(c.concat(c,c,c));
   NC.ledTop(E.HSBtoRGB(hues[1],1,1,1));
   NC.ledBottom(E.HSBtoRGB(hues[2],1,1,1));
-};};
-Badge.patterns.disco=()=>{ var n=0;return ()=> {
+},50];};
+Badge.patterns.rave=()=>{ var n=0;return [()=> {
   n += 0.01;
-  var d = new Uint8ClampedArray(18);
+  var d = new Uint8Array(18);
   E.mapInPlace(d,d,x=>Math.random()*2048 - 1792);
   NC.ledBottom(d); // hack to send to *all* LEDs
-};};
+},50];};
+Badge.patterns.lightning=()=>{ var n=0;return [()=> {
+  var d = new Uint8Array(18);
+  r = (0|(50*Math.random()))*3;
+  d.set([255,255,255],r);// will silently set out of bounds most of the time 
+  NC.ledBottom(d); // hack to send to *all* LEDs
+},20];};
+// Actually display a pattern
 Badge.pattern = name => {
   NC.ledTop();
   NC.ledBottom();
   NC.backlight();
   if (Badge._pattern) clearInterval(Badge._pattern);
   delete Badge._pattern;
-  if (Badge.patterns[name]) 
-    Badge._pattern = setInterval(Badge.patterns[name](),50);
+  if (Badge.patterns[name]) {
+    var p = Badge.patterns[name]();
+    if (p[1]) Badge._pattern = setInterval(p[0],p[1]);
+    else p[0]();
+  }
 };
 
 // --------------------------------------------
@@ -778,15 +817,39 @@ function onInit() {
  Badge.drawCenter("Hold down BTN4 to\nenable connection.");
  digitalPulse(VIBL,1,100);
  digitalPulse(VIBR,0,[500,100]);
+ digitalPulse(LED1,1,100);
+ digitalPulse(LED2,0,[500,100]);
+ var hue = -0.1;
+ setTimeout(function anim() {
+  hue+=0.1;
+  var c = E.HSBtoRGB(hue,1,hue<=1,1);
+  NC.backlight(c.concat(c,c,c));
+  NC.ledTop(E.HSBtoRGB(hue,1,1,1));
+  NC.ledBottom(E.HSBtoRGB(hue,1,1,1));
+  if (hue<=1) setTimeout(anim,200);
+ },200);
  setTimeout(x=>{ 
    if (!BTN4.read()) {
      NRF.nfcURL(Badge.URL);
-     Badge.badge();
+     loadSettings();
      //NRF.sleep();
-   } else reset();   
+   } else reset();
  },1000);
 }
-
+function loadSettings() {  
+  var firstLoad = false;
+  try { 
+    var o = JSON.parse(require("Storage").read("settings"));
+    for (var i in o)
+      if ("boolean"==typeof o[i])
+        Badge.settings[i]=o[i];
+   } catch (e) {
+    console.log("Failed to load settings.");
+    firstLoad = true;
+  }
+  if (firstLoad) Badge.apps.Privacy(true);
+  else Badge.badge();
+}
 
 
 
