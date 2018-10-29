@@ -56,9 +56,12 @@ exports = {
     return s;
   },
   light : function() {
-    analogRead(LED2);
-    return Math.min(analogRead(LED2)*5,1);
-  },  
+    LED2.reset();
+    analogRead(LED2);  
+    var n = 0;
+    for (var i=0;i<10;i++)n+=analogRead(LED2);
+    return Math.min(n*0.3,1);
+  }, 
   accel : function() {
     var d = i2c.ra(0x28|0x80,6);
     return {
