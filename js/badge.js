@@ -272,6 +272,8 @@ Badge.badge = ()=>{
   var timeStr = date.toISOString().split("T")[1].substr(0,5);
   if (NC.getBatteryState().charging)
     timeStr+=" CHARGING";
+  if (E.getAnalogVRef()<3.25)
+    timeStr+=" LOW BATTERY";
   g.drawString(timeStr,0,59);
   // now write to the screen
   g.flip();
@@ -858,23 +860,3 @@ function loadSettings() {
   else Badge.badge();
 }
 
-function click() {
-   // Turn on single and double clicks for Z, Y and X axis
-  i2c.wa(0x38, 0x3F); // click_cfg
-  // Set click/double click configuration values
-  i2c.wa(0x3A, 0x3C); // CLICK_THS
-  i2c.wa(0x3B, 0x46); // TIME_LIMIT
-  i2c.wa(0x3C, 0x40); // TIME_LATENCY
-  i2c.wa(0x3D, 0xFF); // TIME_WINDOW
-  i2c.wa(0x22, 0x40) // Click int on INT1
-}
-
-
-function accel() {
-  var i2c = NC.i2c;
-  i2c.wa(0x30,0x30); // OR Z min/Z max
-  i2c.wa(0x32,0x30); // 7 bit threshhold
-  i2c.wa(0x33,0x10); // 7 bit duration
-  i2c.wa(0x22,0x10) // AOI1 int on INT1
-  setWatch(x=>LED.set(x.state),D3,{repeat:true,edge:"both"});
-}
