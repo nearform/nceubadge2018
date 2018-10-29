@@ -270,6 +270,8 @@ Badge.badge = ()=>{
   g.setFontAlign(-1,-1);
   var date = new Date(Badge.bleDate+getTime()-Badge.bleDateTime);
   var timeStr = date.toISOString().split("T")[1].substr(0,5);
+  if (NC.getBatteryState().charging)
+    timeStr+=" CHARGING";
   g.drawString(timeStr,0,59);
   // now write to the screen
   g.flip();
@@ -607,7 +609,6 @@ Badge.apps["Flappy Bird"] = () => {
   setTimeout(onFrame, 10);
  }
 
- function onFrame() {
   var buttonState = BTN2.read()||BTN3.read()||(NC.accel().z>0);
 
   g.clear();
