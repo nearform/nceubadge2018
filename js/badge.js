@@ -609,6 +609,7 @@ Badge.apps["Flappy Bird"] = () => {
   setTimeout(onFrame, 10);
  }
 
+ function onFrame() {
   var buttonState = BTN2.read()||BTN3.read()||(NC.accel().z>0);
 
   g.clear();
@@ -816,11 +817,15 @@ NRF.on('disconnect',addr=>Terminal.println("BLE disconnected"));
 // Run at boot...
 function onInit() { 
  Badge.drawCenter("Hold down BTN4 to\nenable connection.");
- digitalPulse(VIBL,1,100);
- digitalPulse(VIBR,0,[500,100]);
- digitalPulse(LED1,1,100);
- digitalPulse(LED2,0,[500,100]);
- var hue = -0.1;
+ // buzz after a delay to give stuff like the accelerometer a chance to init
+ setTimeout(function() {
+   digitalPulse(VIBL,1,100);
+   digitalPulse(VIBR,0,[500,100]);
+   digitalPulse(LED1,1,100);
+   digitalPulse(LED2,0,[500,100]);
+ },100);
+ // flashy lights!
+ var hue = -0.2;  
  setTimeout(function anim() {
   hue+=0.1;
   var c = E.HSBtoRGB(hue,1,hue<=1,1);
@@ -828,14 +833,15 @@ function onInit() {
   NC.ledTop(E.HSBtoRGB(hue,1,1,1));
   NC.ledBottom(E.HSBtoRGB(hue,1,1,1));
   if (hue<=1) setTimeout(anim,200);
- },200);
+ },250);
+ // finally start up
  setTimeout(x=>{ 
    if (!BTN4.read()) {
      NRF.nfcURL(Badge.URL);
      loadSettings();
      //NRF.sleep();
    } else reset();
- },1000);
+ },1500);
 }
 function loadSettings() {  
   var firstLoad = false;
@@ -852,6 +858,23 @@ function loadSettings() {
   else Badge.badge();
 }
 
+function click() {
+   // Turn on single and double clicks for Z, Y and X axis
+  i2c.wa(0x38, 0x3F); // click_cfg
+  // Set click/double click configuration values
+  i2c.wa(0x3A, 0x3C); // CLICK_THS
+  i2c.wa(0x3B, 0x46); // TIME_LIMIT
+  i2c.wa(0x3C, 0x40); // TIME_LATENCY
+  i2c.wa(0x3D, 0xFF); // TIME_WINDOW
+  i2c.wa(0x22, 0x40) // Click int on INT1
+}
 
 
-
+function accel() {
+  var i2c = NC.i2c;
+  i2c.wa(0x30,0x30); // OR Z min/Z max
+  i2c.wa(0x32,0x30); // 7 bit threshhold
+  i2c.wa(0x33,0x10); // 7 bit duration
+  i2c.wa(0x22,0x10) // AOI1 int on INT1
+  setWatch(x=>LED.set(x.state),D3,{repeat:true,edge:"both"});
+}
