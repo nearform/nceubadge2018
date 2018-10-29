@@ -41,6 +41,25 @@ and go to [espruino.com/ide](https://www.espruino.com/ide) and you can connect.
 You're looking for a device called `Pixl abcd` where `abcd` are the last 4
 characters of the MAC address shown on the Badge's screen.
 
+*If you used Espruino before, ensure that the `Save on Send` option in the
+`Communications` part of the Web IDE's settings is set to `To RAM` otherwise
+you'll overwrite the badge firmware.**
+
+
+Returning to Standard
+---------------------
+
+* [Click this link](https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/NC.js) in Chrome
+* Connect to your badge
+* Copy and paste the code from the right-hand side of the IDE into the left-hand side - this will load the 'NC' module directly into the Badge's flash memory
+* [Click this link](https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/badge.js) in Chrome
+* Connect to your badge
+* Turn the `Save on Send` option in the `Communications` part of the Web IDE's settings to `Direct To Flash`
+* Upload the code
+* Return the `Save on Send` option in the `Communications` part of the Web IDE's settings to `To RAM`
+
+You're sorted!
+
 
 Stuff to do
 -----------
@@ -77,17 +96,42 @@ It will *definitely* be thrown off by any light from any of the other on-badge L
 
 ### Vibration
 
-TODO
+You can use the vibration motors just like normal pins on Espruino...
 
 ```
-VIBL/VIBR
+// Use VIBL/VIBR for left and right motors
+
+// Motor on
 digitalWrite(VIBL,1);
+// Motor off
+digitalWrite(VIBL,0);
+// Pulse motor on for 100ms
 digitalPulse(VIBL,1,100);
-analogWrite(VIBL,0.3);
+// Pulse motor 3 times, for 100ms, with 150ms between each pulse
+digitalPulse(VIBL,1,[100,150,100,150,100]);
 
+// Or slowly ramp the speed of the motor up and down
+var n = 0;
+setTimeout(function cb() {
+  analogWrite(VIBL,Math.sin(n));
+  n+=0.01;
+  if (n<Math.PI) setTimeout(cb,20);
+  else digitalWrite(VIBL,0);
+}, 20);
+```
 
+### Sound
+
+The vibration motors can also be used to create (reasonably quiet) sounds.
+
+```
 analogWrite(VIBL,0.05,{freq:2000});  // Make sound!
 ```
+
+There are some very simple examples at http://www.espruino.com/Making+Music
+that will work on the vibration motor - just make sure that the second argument
+of `analogWrite` (the duty cycle) is low enough that the vibration motor isn't
+turning!
 
 ### Accelerometer
 
@@ -115,7 +159,13 @@ Extending the badge
 -------------------
 
 You can add your own 'Apps' or LED patterns that will display in the Badge's
-memory:
+memory just by adding them to the `Badge.patterns` or `Badge.apps` arrays.
+
+Normally when you upload code from the right-hand side of the IDE it will reset
+the badge (this won't remove saved code, but will stop the badge code from running).
+To avoid this, either copy/paste your code from the right-hand side of the IDE
+to the left, or disable the `Reset before send` option in the `Communications` part
+of the Web IDE's settings.
 
 ## Patterns
 
@@ -160,7 +210,7 @@ Badge.apps["My App"] = ()=>{
  // Reset everything on the badge to a known state
  Badge.reset();
  // Display a menu
- Pixl.menu({ "": { "title": "-- A Test --" ,
+ Pixl.menu({ "": { "title": "-- A Test --" },
    "LED1 on" : ()=>LED1.write(1),
    "LED1 off" : ()=>LED1.write(0),
    "Back to Badge":Badge.badge
@@ -168,20 +218,29 @@ Badge.apps["My App"] = ()=>{
 };
 ```
 
+And you can test by running `Badge.apps["My App"]()`
+
 To return to normal badge functionality just call `Badge.badge()` or `Badge.menu()`
 to return to the menu.
 
 ## Saving...
 
-TODO...
+When you upload code as described above, your function will be loaded
+into RAM and will be lost when the badge is reset.
+
+To make it persist, you can write it into a file in the badge's storage
+called `.boot0`,`.boot1`,`.boot2` or `.boot3` - each one is executed in
+turn on boot so you can have more than one extension at once.
 
 ```
-require("Storage".write(".boot1",`
+require("Storage").write(".boot0",`
+Badge=global.Badge||{};
+Badge.apps=Badge.apps||{};
 Badge.apps["My App"] = ()=>{
  // Reset everything on the badge to a known state
  Badge.reset();
  // Display a menu
- Pixl.menu({ "": { "title": "-- A Test --" ,
+ Pixl.menu({ "": { "title": "-- A Test --" },
    "LED1 on" : ()=>LED1.write(1),
    "LED1 off" : ()=>LED1.write(0),
    "Back to Badge":Badge.badge
