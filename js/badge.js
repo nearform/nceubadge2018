@@ -343,14 +343,16 @@ Badge.apps["Privacy"] = firstRun=>{
  function toggle(setting) {
    return ()=>{
      Badge.settings[setting] = !Badge.settings[setting];
-     require("Storage").write("settings", Badge.settings);
      Badge.apps.Privacy(firstRun);
    };
  }
  var menu = { "": { "title": "-- Privacy Settings --" } };
  menu["Send Anon. Location : "+(Badge.settings.location?"Yes":"No")]=toggle("location");
  menu["Get Alerts/Info : "+(Badge.settings.allowScan?"Yes":"No")]=toggle("allowScan");
- menu[firstRun?"Continue...":"Back to Badge"]=Badge.badge;
+ menu[firstRun?"Continue...":"Back to Badge"]=()=>{
+   require("Storage").write("settings", Badge.settings);
+   Badge.badge();
+ };
  Badge.reset();
  Pixl.menu(menu);
 };
@@ -807,7 +809,7 @@ Badge.pattern = name => {
   if (Badge.patterns[name]) {
     var p = Badge.patterns[name]();
     if (p[1]) Badge._pattern = setInterval(p[0],p[1]);
-    else p[0]();
+    p[0]();
   }
 };
 
