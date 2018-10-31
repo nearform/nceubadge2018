@@ -3,8 +3,9 @@ var NC = require("NC");
 Badge = global.Badge||{};
 Badge.URL = "http://www.espruino.com";
 Badge.settings = {
-  allowScan:true, // Allow scanning?
-  location:true   // send anonymous location data (TODO)
+  allowScan:true,// Allow scanning?
+  location:true, // Send anonymous location data (needed for clapometer)
+  clap:true      // Clapometer
 };
 // User-defined apps
 Badge.apps = Badge.apps||{};
@@ -44,6 +45,7 @@ Badge.reset = () => {
  LoopbackB.removeAllListeners();
  g.clear();
  g.flip();
+ Badge.updateBLE();
  if (Badge.defaultPattern) Badge.pattern(Badge.defaultPattern);
 };
 // --------------------------------------------
@@ -57,6 +59,8 @@ Badge.bleDateTime = getTime();
 Badge.bleState = 0;
 // The place in the conference we're at according to adv data
 Badge.bleRoom = 0; // ROOMS.UNKNOWN
+// Should the badge be connectable?
+Badge.connectable = false;
 // --------------------------------------------
 // Bluetooth scanning - usually only done from Badge.menu
 // Emit a BLEx event when the data received changes
@@ -100,6 +104,26 @@ Badge.scanOnce = (on) => {
   }, { filters: [{ manufacturerData:{0x0590:{}} }] });
 };
 Badge.getName = ()=>NRF.getAddress().substr(-5).replace(":", "");
+Badge.updateBLE = ()=>{
+  var data = {t: 0|E.getTemperature()};
+  if (Badge.settings.clap) data.c=6;
+  var adv={
+    showName: Badge.connectable,
+    connectable: Badge.connectable,
+    interval: Badge.connectable?100:1000
+  };
+  if (!Badge.connectable) {
+    adv.manufacturer=0x0590;
+    adv.manufacturerData=JSON.stringify(data);
+  }
+  NRF.setAdvertising({}, adv);
+  NRF.setServices(undefined,{uart:Badge.connectable});
+  // No advertising at all if no location data
+  if (!Badge.settings.location) {
+    if (Badge.connectable) NRF.wake();
+    else NRF.sleep();
+  }  
+};
 // --------------------------------------------
 // Handle badge events
 Badge.on('BLE'+MSG.CONTROL, msgData=>{
@@ -183,8 +207,9 @@ capable browser to start coding!
 Name: Pixl.js ${Badge.getName()}
 MAC: ${NRF.getAddress()}`);
    g.flip();
-   wait(() => { NRF.sleep(); Badge.menu(); });
-   NRF.wake();
+   wait(() => { Badge.connectable = false; Badge.updateBLE(); Badge.menu(); });
+   Badge.connectable = true; 
+   Badge.updateBLE();
   },
  };
  for (var i in Badge.apps) mainmenu[i]=Badge.apps[i];
@@ -352,7 +377,8 @@ Badge.apps["Privacy"] = firstRun=>{
  var menu = { "": { "title": "-- Privacy Settings --" } };
  menu["Send Anon. Location : "+(Badge.settings.location?"Yes":"No")]=toggle("location");
  menu["Get Alerts/Info : "+(Badge.settings.allowScan?"Yes":"No")]=toggle("allowScan");
- menu[firstRun?"Continue...":"Back to Badge"]=()=>{
+ menu["Clapometer : "+(Badge.settings.clap?"Yes":"No")]=toggle("clap");  
+ menu[firstRun?"Continue":"Back to Badge"]=()=>{
    require("Storage").write("settings", Badge.settings);
    Badge.badge();
  };
@@ -696,14 +722,16 @@ Badge.apps["Compass"] = ()=>{
 };
 Badge.apps["Bluetooth Workshop"] = ()=>{
  function ble(fn) {
-   //NRF.wake();
+   Badge.connectable = true;
+   Badge.updateBLE();
    Badge.drawCenter(`Now connectable!
 Press any button to
 exit.
 
 Name: Pixl.js ${Badge.getName()}`,"Bluetooth");   
    function exit() {
-     NRF.setServices({});
+     Badge.connectable = false;
+     NRF.updateBLE();
      Badge.apps["Bluetooth Workshop"]();
    }
    BTNS.forEach(p=>setWatch(exit,p));
