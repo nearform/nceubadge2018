@@ -590,9 +590,8 @@ Badge.apps["Flappy Bird"] = () => {
 
  function newBarrier(x) {
   barriers.push({
-   x1: x - 5,
-   x2: x + 5,
-   y: 10 + Math.random() * (g.getHeight() - 20),
+   x1: x-5, x2: x+5,
+   y: 10+Math.random()*(g.getHeight()-20),
    gap: 8
   });
  }
@@ -664,6 +663,36 @@ Badge.apps["Flappy Bird"] = () => {
  }
  gameStart();
  setWatch(Badge.menu, BTN1);
+};
+Badge.apps["Compass"] = ()=>{
+ Badge.reset();
+ var min,max;
+ function op(a,b,fn) {
+   if (!b) return a;
+   return {x:fn(a.x,b.y),y:fn(a.y,b.y)};
+ }
+ function xy(a,r) {
+   return {x:96+r*Math.sin(a),y:32-r*Math.cos(a)};
+ }
+ setInterval(()=>{
+   var m=NC.mag(); 
+   min=op(m,min,Math.min);
+   max=op(m,max,Math.max);
+   var c = op(max,min,(a,b)=>(a+b)/2);//centre
+   var d = op(max,min,(a,b)=>a-b);//difference
+   var diff = Math.sqrt(d.x*d.x+d.y*d.y);
+   var ang = Math.atan2(m.x-c.x,m.y-c.y);
+   if (ang<0) ang+=2*Math.PI;
+   g.clear();
+   if (diff<4000) g.drawString("Turn 360 degrees\nto calibrate", 0, 0);
+   var p=xy(-ang,24);
+   g.drawLine(96,32,p.x,p.y);
+   g.setFontAlign(0,0);
+   ["-N-","NE","E","SE","S","SW","W","NW"].map((t,a)=>{var p=xy(a*Math.PI/4-ang,28);g.drawString(t,p.x,p.y);});
+   g.setFontAlign(-1,-1);
+   g.flip();
+ },50);
+ BTNS.forEach(p=>setWatch(Badge.badge,p));
 };
 Badge.apps["Bluetooth Workshop"] = ()=>{
  function ble(fn) {
@@ -867,4 +896,5 @@ function loadSettings() {
   if (firstLoad) Badge.apps.Privacy(true);
   else Badge.badge();
 }
+
 
