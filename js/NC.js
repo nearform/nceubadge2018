@@ -29,7 +29,7 @@ function init() {
   // LSM303
   if (i2c.ra(15,1)[0]!=73) console.log("LSM303D WHOIS failed");
   //i2c.wa(0x1f,0x80) // ctrl0-reset memory
-  i2c.wa(0x20,0x57); //ctrl1 - 50Hz, all 3 axes (what about block data update?)
+  i2c.wa(0x20,0x5F); //ctrl1 - 50Hz, all 3 axes, block data update
   i2c.wa(0x21,0); //ctrl2 - +-2g, no filtering
   i2c.wa(0x22,0); //ctrl3 -  int1 src
   i2c.wa(0x23,0); //ctrl4 - int2 src 
