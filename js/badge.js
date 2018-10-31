@@ -32,6 +32,27 @@ var START_DATE = Date.parse('2018-01-01 00:00:00');
 // Whitelisted BLE broadcasters
 var WHITELIST = [
   "b8:27:eb:31:6f:66 public",
+  "b8:27:eb:b3:2a:b2 public", 
+  "b8:27:eb:b6:af:fd public", 
+  "b8:27:eb:8e:f9:73 public", 
+  "b8:27:eb:db:4a:8b public", 
+  "b8:27:eb:22:f2:0a public", 
+  "b8:27:eb:95:3c:1b public", 
+  "b8:27:eb:c2:ae:39 public", 
+  "b8:27:eb:e3:d0:cf public", 
+  "b8:27:eb:67:ee:83 public", 
+  "b8:27:eb:e4:01:2c public", 
+  "b8:27:eb:b3:24:00 public", 
+  "b8:27:eb:5b:d3:29 public", 
+  "b8:27:eb:61:7a:29 public", 
+  "b8:27:eb:7e:0a:45 public", 
+  "b8:27:eb:b0:13:4e public", 
+  "b8:27:eb:8f:a0:c2 public", 
+  "b8:27:eb:a2:4c:5d public", 
+  "b8:27:eb:97:a8:52 public", 
+  "b8:27:eb:95:12:18 public", 
+  "b8:27:eb:8e:dc:f0 public", 
+  "b8:27:eb:fb:ad:f7 public"
 ];
 // How long do we show now/next info on the badge?
 var NOWNEXT_TIMEOUT = 12000;
@@ -986,5 +1007,3 @@ function loadSettings() {
   if (firstLoad) Badge.apps.Privacy(true);
   else Badge.badge();
 }
-
-
