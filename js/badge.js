@@ -12,29 +12,7 @@ Badge.patterns = Badge.patterns||{};
 Badge.badgeImages = Badge.badgeImages||[];
 Badge.badgeImages.push({ width: 128, height: 64, bpp: 1,
  buffer: E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAAAAAAP/gAAAAAAAAAAAAAAAAAP/+0AAAAAAAAAAAAAAAAAP+AHgAAAAAAAAAAAAAAAADQAAsAAAAAAAAAAAAAAAAAyAAFgAAAAAAAAAAAAAAAAOgAAvwAAAAAAAAAAAAAAABUD+F2AAAAAAAAAAAAAAAAS/D/4gAAAAAAAAAAAAAAAEv//nIAAAAAAAAAAAAAAABE/4BaAAAAAAAAAAAAAAAAQ8AAWh/wAAAAAGAAAAAAAEAAAFof8AAAAABgAAAAAABAAAByHAAAAAAAAAAAAAAAQAAAZhwB4bhtjmZweAAAAEAAAGwcA/H8fY5n+PwAAABAAABwH+MZznGOZznOAAAAQAAAYB/jgYZhjmcZhgAAAeAAAGAcAfGGYY5nGYYAAAHgAABgHAB5hmGOZxmGAAAB8AAAcBwCGc5hjmcZzgAAAPgAAHAf8/n8Yf5nGPwAAAB4AANwH/HxuGD2Zxh4AAAAfAH/wAAAAYAAAAAAAAAAADx//oAAAAGAAAAAAAAAAAAWf7eAAAABgAAAAAAAAAAAH+38AAAAAAAAAAAAAAAAAAB/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="))});
-Badge.hexImage = Graphics.createImage(`
-      ######
-     #
-     # #
-    # # #  #
-    #  ##  #
-    #    # #
-  ######  #
-  #  #  # ##
- #    ####
-#  #     #
-# # ######
-#  #     #
- #    ####
-  #  #  # ##
-  ######  #
-    #    # #
-    #  ##  #
-    # # #  #
-     # #
-     #
-`);
-Badge.hexImage.transparent = 0;
+
 BTNS = [BTN1,BTN2,BTN3,BTN4];
 // Message types received over BLE
 var MSG = {
@@ -220,6 +198,30 @@ Badge.badge = ()=>{
  var counter = 0;
  var imgy = 0;
   
+ var hexImage = Graphics.createImage(`
+      ######
+     #
+     # #
+    # # #  #
+    #  ##  #
+    #    # #
+  ######  #
+  #  #  # ##
+ #    ####
+#  #     #
+# # ######
+#  #     #
+ #    ####
+  #  #  # ##
+  ######  #
+    #    # #
+    #  ##  #
+    # # #  #
+     # #
+     #
+`);
+ hexImage.transparent = 0;
+  
  function draw(n) {
   var t = Date.now();
   var timeDiff = t-lastTime;
@@ -237,7 +239,7 @@ Badge.badge = ()=>{
   var img = Badge.badgeImages[counter];
   g.drawImage(img, (115-img.width)/2, (64-img.height)/2);
   // Draw the hex image down the side
-  for (var y=-imgy;y<63;y+=20)g.drawImage(Badge.hexImage,115,y);
+  for (var y=-imgy;y<63;y+=20)g.drawImage(hexImage,115,y);
   // remove any old notifications
   Badge.notifications = Badge.notifications.filter(n=>(n.time-=timeDiff)>0);
   // Draw notifications
