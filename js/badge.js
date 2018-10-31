@@ -19,10 +19,12 @@ BTNS = [BTN1,BTN2,BTN3,BTN4];
 var MSG = {
   CONTROL: 1,
   LED_COLOR: 2,
-  MSG_NEXT: 3,
-  MSG_NOW: 4,
   MSG_ALERT: 5,
-  MSG_INFO: 6
+  MSG_INFO: 6,
+  MSG_NOW1: 7,
+  MSG_NOW2: 8,
+  MSG_NEXT1: 9,
+  MSG_NEXT1: 10
 };
 var BADGE_STATE = {
   SLEEPY: 1,
@@ -31,7 +33,7 @@ var BADGE_STATE = {
 var START_DATE = Date.parse('2018-01-01 00:00:00');
 // Whitelisted BLE broadcasters
 var WHITELIST = [
-  "b8:27:eb:31:6f:66 public",
+  "b8:27:eb:31:6f:66 public",//gw
   "b8:27:eb:b3:2a:b2 public", 
   "b8:27:eb:b6:af:fd public", 
   "b8:27:eb:8e:f9:73 public", 
@@ -73,8 +75,6 @@ Badge.reset = () => {
  if (Badge.defaultPattern) Badge.pattern(Badge.defaultPattern);
 };
 // --------------------------------------------
-// List of notifications to show
-Badge.notifications = [ /* { text: ..., time: msecs } */];
 // The time since Unix Epoch as discovered from Bluetooth
 Badge.bleDate = START_DATE;
 // The time in secs from 'getTime' at which this time was discovered
@@ -215,12 +215,6 @@ Badge.on('BLE'+MSG.MSG_ALERT, msgData=>{
 Badge.on('BLE'+MSG.MSG_INFO, msgData=>{
   Badge.info(msgData);
 });
-Badge.on('BLE'+MSG.MSG_NOW, msgData=>{
-  Badge.notifications.push({text:"NOW: "+msgData, time:NOWNEXT_TIMEOUT});
-});
-Badge.on('BLE'+MSG.MSG_NEXT, msgData=>{
-  Badge.notifications.push({text:"NEXT: "+msgData, time:NOWNEXT_TIMEOUT});
-});
 Badge.on('BLE'+MSG.LED_COLOR, msgData=>{
   var d=E.toArrayBuffer(msgData);
   NC.ledTop(new Uint8Array(d,0,3));
@@ -303,6 +297,7 @@ Badge.badge = ()=>{
  var timeout;
  var lastTime = Date.now();
  var counter = 0;
+ var toggle = false;
  var imgy = 0;
   
  var hexImage = Graphics.createImage(`
@@ -329,34 +324,53 @@ Badge.badge = ()=>{
 `);
  hexImage.transparent = 0;
   
+ function getTimeChar(ch) {
+   var min = ch.charCodeAt()*10;
+   return ((min/60)|0)+":"+("0"+min%60).substr(-2);
+ }
+
+  
  function draw(n) {
   var t = Date.now();
   var timeDiff = t-lastTime;
   lastTime = t;
-   
+
+  toggle=!toggle;
   counter += n ? n : 0;
   if (counter < 0) counter = Badge.badgeImages.length - 1;
   if (counter >= Badge.badgeImages.length) counter = 0;
-   
+
   imgy++;
   if (imgy>20)imgy=0;
-   
+
   g.clear();
   // Draw the badge image
   var img = Badge.badgeImages[counter];
   g.drawImage(img, (115-img.width)/2, (64-img.height)/2);
   // Draw the hex image down the side
   for (var y=-imgy;y<63;y+=20)g.drawImage(hexImage,115,y);
-  // remove any old notifications
-  Badge.notifications = Badge.notifications.filter(n=>(n.time-=timeDiff)>0);
+
+  var notify = []; 
+  function addTalkInfo(m1,m2) {
+    var msg1=Badge.bleData[m1], msg2=Badge.bleData[m2];
+    if (msg1) {
+      var msg = getTimeChar(msg1)+": "+msg1.substr(1);
+      if (toggle && msg2 && msg1[0]==msg2[0])
+        msg = getTimeChar(msg2)+": "+msg2.substr(1);
+      notify.push(msg);
+    }
+  }   
+  addTalkInfo(MSG.MSG_NOW1, MSG.MSG_NOW2);
+  addTalkInfo(MSG.MSG_NEXT1, MSG.MSG_NEXT2);
+  
   // Draw notifications
-  if (Badge.notifications.length) {
-    var h = Badge.notifications.length*6+2;
+  if (notify.length) {
+    var h = notify.length*6+2;
     g.setColor(0);
     g.fillRect(0,0,127,h);
     g.setColor(1);
     g.drawRect(0,0,127,h);
-    Badge.notifications.forEach((n,i)=>g.drawString(n.text,2,2+i*6));
+    notify.forEach((n,i)=>g.drawString(n,2,2+i*6));
   }
   // Draw the current time
   g.setFontAlign(-1,-1);
