@@ -138,7 +138,7 @@ Badge.scanOnce = (on) => {
     d[m[0]] = E.toString(new Uint8Array(m,1));
   }, { filters: [{ manufacturerData:{0x0590:{}} }] });
 };
-
+Badge.getName = ()=>NRF.getAddress().substr(-5).replace(":", "");
 // --------------------------------------------
 // Handle badge events
 Badge.on('BLE'+MSG.CONTROL, msgData=>{
@@ -219,7 +219,7 @@ with a BLE capable device. Go to
 espruino.com/ide on a Web BLE
 capable browser to start coding!
 
-Name: Pixl.js ${NRF.getAddress().substr(-5).replace(":", "")}
+Name: Pixl.js ${Badge.getName()}
 MAC: ${NRF.getAddress()}`);
    g.flip();
    wait(() => { NRF.sleep(); Badge.menu(); });
@@ -665,12 +665,12 @@ Badge.apps["Flappy Bird"] = () => {
 Badge.apps["Bluetooth Workshop"] = ()=>{
  function ble(fn) {
    //NRF.wake();
-   Terminal.setConsole(1);
    Badge.drawCenter(`Now connectable!
 Press any button to
-exit.`,"Bluetooth");   
+exit.
+
+Name: Pixl.js ${Badge.getName()}`,"Bluetooth");   
    function exit() {
-     Bluetooth.setConsole();
      NRF.setServices({});
      Badge.apps["Bluetooth Workshop"]();
    }
@@ -703,7 +703,7 @@ exit.`,"Bluetooth");
          }
        }
      });
-   }),
+   },{uart:false}),
    "Accelerometer":()=>ble(()=>{
      NRF.setServices({
        "7b340000-105b-2b38-3a74-2932f884e90e" : {
@@ -716,6 +716,7 @@ exit.`,"Bluetooth");
      });
      setInterval(()=>{
        var accel = NC.accel();
+       try {
        NRF.updateServices({
          "7b340000-105b-2b38-3a74-2932f884e90e" : {
            "7b340003-105b-2b38-3a74-2932f884e90e" : {
@@ -724,8 +725,10 @@ exit.`,"Bluetooth");
            }
          }
        });
+       } catch (e) {
+       }
      },200);
-   }),
+   },{uart:false}),
    "Back to Badge":Badge.badge
  };
  Badge.reset();
