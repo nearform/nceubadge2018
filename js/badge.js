@@ -38,6 +38,7 @@ var NOWNEXT_TIMEOUT = 12000;
 Badge.reset = () => {
  Pixl.menu();
  Badge.scan(0);
+ Badge.setClapometer(0);
  Badge.pattern();
  clearInterval();
  clearWatch();
@@ -107,6 +108,54 @@ Badge.getName = ()=>NRF.getAddress().substr(-5).replace(":", "");
 Badge.updateBLE = ()=>{
   var data = {t: 0|E.getTemperature()};
   if (Badge.settings.clap) data.c=6;
+  var adv={
+    showName: Badge.connectable,
+    connectable: Badge.connectable,
+    interval: Badge.connectable?100:1000
+  };
+  if (!Badge.connectable) {
+    adv.manufacturer=0x0590;
+    adv.manufacturerData=JSON.stringify(data);
+  }
+  NRF.setAdvertising({}, adv);
+  NRF.setServices(undefined,{uart:Badge.connectable});
+  // No advertising at all if no location data
+  if (!Badge.settings.location) {
+    if (Badge.connectable) NRF.wake();
+    else NRF.sleep();
+  }  
+};
+Badge.setClapometer = (on)=>{
+  on&=Badge.settings.clap;
+  if (Badge.clapWatch) clearWatch(Badge.clapWatch);
+  delete Badge.clapWatch;
+  if (Badge.clapInterval) clearInterval(Badge.clapInterval);
+  delete Badge.clapInterval;
+  
+  Badge.clapCurrent=0;
+  Badge.clapLast=0;
+  
+  var i = NC.i2c;
+  if (on) {
+    i.wa(0x20,0x9F); // 800Hz
+    i.wa(0x30,0x20); // OR Z min/Z max
+    i.wa(0x32,0x48); // 7 bit threshhold - 0x40 is 1G
+    i.wa(0x33,0x7); // 7 bit duration
+    i.wa(0x22,0x20); // AOI1 int on INT1
+    Badge.clapWatch = setWatch(e=>{
+      digitalPulse(LED,1,10);
+      Badge.clapCurrent++;
+    },D3,{repeat:true,edge:"rising"});
+    Badge.clapInterval = setInterval(function() {
+      Badge.clapLast = Badge.clapCurrent;
+      Badge.clapCurrent = 0;
+    }, 10000);
+  } else {
+    i.wa(0x20,0x5F); // 50Hz
+    i.wa(0x30,0x00); // No sensing
+  }
+  var data = {t: 0|E.getTemperature()};
+  if (Badge.settings.clap) data.c=0|Badge.clapLast;
   var adv={
     showName: Badge.connectable,
     connectable: Badge.connectable,
@@ -298,6 +347,8 @@ Badge.badge = ()=>{
  setWatch(e => draw(1), BTN3, { repeat: 1 });
  // start scanning for Bluetooth advertising
  Badge.scan(1);
+ // Start clapometer
+ Badge.setClapometer(1);
 };
 
 // --------------------------------------------
