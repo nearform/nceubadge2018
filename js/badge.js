@@ -24,13 +24,15 @@ var MSG = {
   MSG_ALERT: 5,
   MSG_INFO: 6
 };
+var BADGE_STATE = {
+  SLEEPY: 1,
+  ACTIVE_LISTENING: 2
+};
 var START_DATE = Date.parse('2018-01-01 00:00:00');
 // Whitelisted BLE broadcasters
 var WHITELIST = [
   "b8:27:eb:31:6f:66 public",
 ];
-// How often to scan in millisecs
-var SCAN_INTERVAL = 60000;
 // How long do we show now/next info on the badge?
 var NOWNEXT_TIMEOUT = 12000;
 // --------------------------------------------
@@ -57,7 +59,7 @@ Badge.bleDate = START_DATE;
 // The time in secs from 'getTime' at which this time was discovered
 Badge.bleDateTime = getTime();
 // Current badge state according to adv data
-Badge.bleState = 0;
+Badge.bleState = BADGE_STATE.SLEEPY;
 // The place in the conference we're at according to adv data
 Badge.bleRoom = 0; // ROOMS.UNKNOWN
 // Should the badge be connectable?
@@ -72,8 +74,9 @@ Badge.scan = (on) => {
     clearInterval(Badge.scanInterval);
     delete Badge.scanInterval;
   }
+  var interval = (Badge.bleState&BADGE_STATE.ACTIVE_LISTENING)?1100:60000;
   if (on)
-    Badge.scanInterval = setInterval(()=>Badge.scanOnce(1), SCAN_INTERVAL);
+    Badge.scanInterval = setInterval(()=>Badge.scanOnce(1), interval);
   Badge.scanOnce(on);
 };
 Badge.scanOnce = (on) => {
@@ -84,24 +87,21 @@ Badge.scanOnce = (on) => {
   }
   if (!on) // if not scanning, stop now
     return NRF.setScan();
-  var d = [];
   packets = 0;
   Badge.scanTimeout = setTimeout(()=>{
     delete Badge.scanTimeout;
     NRF.setScan();
-    for (var k in d) {
-      if (Badge.bleData[k]!=d[k]) {
-        Badge.bleData[k] = d[k];
-        Badge.emit("BLE"+k,d[k]);
-      }
-
-    }
   }, 1000);
   NRF.setScan(device => {
     var m = device.manufacturerData;
     if (WHITELIST.indexOf(device.id)<0 || !m) return;
     packets++;
-    d[m[0]] = E.toString(new Uint8Array(m,1));
+    var k = m[0];
+    var v = E.toString(new Uint8Array(m,1));
+    if (Badge.bleData[k]!=v) {
+      Badge.bleData[k]=v;
+      Badge.emit("BLE"+k,v);
+    }
   }, { filters: [{ manufacturerData:{0x0590:{}} }] });
 };
 Badge.getName = ()=>NRF.getAddress().substr(-5).replace(":", "");
@@ -179,8 +179,14 @@ Badge.on('BLE'+MSG.CONTROL, msgData=>{
   var d = new DataView(E.toArrayBuffer(msgData));
   Badge.bleDate = START_DATE+d.getUint32(0,1)*1000;
   Badge.bleDateTime = getTime();
-  Badge.bleState = d.getUint8(4);
+  var newState = d.getUint8(4);
   Badge.bleRoom = d.getUint8(5);
+  /* If state changed, restart scan - it may
+  need to be faster/slower */
+  if (newState!=Badge.bleState) {
+    Badge.bleState = newState;
+    Badge.scan(1);
+  }
 });
 Badge.on('BLE'+MSG.MSG_ALERT, msgData=>{
   Badge.alert(msgData);
@@ -193,6 +199,12 @@ Badge.on('BLE'+MSG.MSG_NOW, msgData=>{
 });
 Badge.on('BLE'+MSG.MSG_NEXT, msgData=>{
   Badge.notifications.push({text:"NEXT: "+msgData, time:NOWNEXT_TIMEOUT});
+});
+Badge.on('BLE'+MSG.LED_COLOR, msgData=>{
+  var d=E.toArrayBuffer(msgData);
+  NC.ledTop(new Uint8Array(d,0,3));
+  NC.ledBottom(new Uint8Array(d,3,3));
+  NC.backlight(new Uint8Array(d,6,12));
 });
 
 // --------------------------------------------
@@ -385,8 +397,7 @@ Badge.apps["Map"] = function() {
     g.clear();
     g.drawImage(mapImg);
     
-    var room = S
-    [Badge.bleRoom];
+    var room = ROOMS[Badge.bleRoom];
     if (room==undefined) room=["Unknown"];
     g.setFontAlign(0,-1);
     g.drawString(room[0],64,0);
