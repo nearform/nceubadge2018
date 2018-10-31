@@ -17,16 +17,18 @@ function click() {
   setWatch(x=>{print(x.state);LED.write(x.state)},D3,{repeat:true,edge:"both"});
 }*/
 
-/*
+
 // kinda works. click would be better
 function accel() {
   var i2c = NC.i2c;
   i2c.wa(0x20,0x9F); // 800Hz
   i2c.wa(0x30,0x20); // OR Z min/Z max
-  i2c.ra(0x31)[0].toString(2); // read int state
-  i2c.wa(0x32,0x2); // 7 bit threshhold
+  //i2c.ra(0x31)[0].toString(2); // read int state
+  i2c.wa(0x32,0x48); // 7 bit threshhold - 0x40 is 1G
   i2c.wa(0x33,0x7); // 7 bit duration
   i2c.wa(0x22,0x20); // AOI1 int on INT1
   clearWatch();
-  setWatch(x=>{print(x.state);LED.write(x.state)},D3,{repeat:true,edge:"both"});
-}*/
+  setWatch(e=>{
+    digitalPulse(LED,1,10);
+  },D3,{repeat:true,edge:"rising"});
+}
