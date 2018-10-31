@@ -1,5 +1,3 @@
-var NC = require("NC");
-
 Badge = global.Badge||{};
 Badge.URL = "http://www.espruino.com";
 Badge.NAME = ["Nodeconf","2018"]; // iso8859-2 codepage
@@ -12,7 +10,8 @@ Badge.settings = {
 Badge.apps = Badge.apps||{};
 Badge.patterns = Badge.patterns||{};
 
-BTNS = [BTN1,BTN2,BTN3,BTN4];
+var NC = require("NC");
+var BTNS = [BTN1,BTN2,BTN3,BTN4];
 // Message types received over BLE
 var MSG = {
   CONTROL: 1,
