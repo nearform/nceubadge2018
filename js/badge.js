@@ -260,9 +260,11 @@ Badge.alert = s => {
 };
 Badge.info = s => {
   Badge.reset();
-  Badge.drawCenter(s,"Information");
+  Badge.drawCenter(s,"Information",true/*big*/);
   Badge.pattern("info");  
   BTNS.forEach(p=>setWatch(Badge.badge,p));
+  // keep scanning in case there's an alert
+  Badge.scan(1);
 };
 // https://raw.githubusercontent.com/Tecate/bitmap-fonts/master/bitmap/dylex/7x13.bdf
 // ISO10646-1 codepage
