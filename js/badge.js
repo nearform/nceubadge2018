@@ -12,7 +12,7 @@ Badge.patterns = Badge.patterns||{};
 
 var NC = require("NC");
 var BTNS = [BTN1,BTN2,BTN3,BTN4];
-// Message types received over BLE
+// Message types
 var MSG = {
   CONTROL: 1,
   LED_COLOR: 2,
@@ -28,8 +28,6 @@ var BADGE_STATE = {
   ACTIVE_LISTENING: 2
 };
 var START_DATE = Date.parse('2018-01-01 00:00:00');
-// How long do we show now/next info on the badge?
-var NOWNEXT_TIMEOUT = 12000;
 // --------------------------------------------
 // Get Badge back to normal-ish
 Badge.reset = () => {
@@ -511,6 +509,7 @@ Badge.apps["Privacy"] = firstRun=>{
    };
  }
  var menu = { "": { "title": "-- Privacy Settings --" } };
+ if (firstRun) menu.Skip=Badge.badge;
  menu["Send Anon. Location : "+(Badge.settings.location?"Yes":"No")]=toggle("location");
  menu["Get Alerts/Info : "+(Badge.settings.allowScan?"Yes":"No")]=toggle("allowScan");
  menu["Clapometer : "+(Badge.settings.clap?"Yes":"No")]=toggle("clap");  
