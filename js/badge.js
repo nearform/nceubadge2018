@@ -280,6 +280,13 @@ Badge.drawStringDbl = (txt,px,py,h,align)=>{
   var w = g2.stringWidth(txt);
   var c = (w+3)>>2;
   g2.drawString(txt);
+  if (w>55) { // too wide - use 1x
+    var img = g2.asImage();
+    g.transparent=0;
+    px -= (align+1)*w/2;
+    g.drawImage(img,px,py+2);
+    return;
+  }
   px -= (align+1)*w;
   var img = {width:w*2,height:1,transparent:0,buffer:new ArrayBuffer(c)};
   var a = new Uint8Array(img.buffer);
