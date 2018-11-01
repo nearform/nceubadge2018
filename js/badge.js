@@ -854,6 +854,7 @@ Badge.apps["Compass"] = ()=>{
  BTNS.forEach(p=>setWatch(Badge.badge,p));
 };
 Badge.apps["Bluetooth Workshop"] = ()=>{
+ var onConnect;
  function ble(fn) {
    Badge.connectable = true;
    Badge.updateBLE();
@@ -863,6 +864,7 @@ exit.
 
 Name: Pixl.js ${Badge.getName()}`,"Bluetooth");   
    function exit() {
+     if (onConnect) NRF.removeListener('connect',onConnect);
      Badge.connectable = false;
      Badge.updateBLE();
      digitalWrite([VIBL,VIBR],0);
@@ -912,20 +914,25 @@ Name: Pixl.js ${Badge.getName()}`,"Bluetooth");
          }
        }
      },{uart:false});
-     setInterval(()=>{
-       var accel = NC.accel();
-       try {
-       NRF.updateServices({
-         "7b340000-105b-2b38-3a74-2932f884e90e" : {
-           "7b340003-105b-2b38-3a74-2932f884e90e" : {
-             value : [accel.x*63,accel.y*63,accel.z*63],
-             notify: true
-           }
-         }
-       });
-       } catch (e) {
-       }
-     },200);
+     var started = false;
+     onConnect=()=>{
+       if (started) return;
+       started = true;
+       setTimeout(()=>{
+         setInterval(()=>{
+           var accel = NC.accel();
+           NRF.updateServices({
+             "7b340000-105b-2b38-3a74-2932f884e90e" : {
+               "7b340003-105b-2b38-3a74-2932f884e90e" : {
+                 value : [accel.x*63,accel.y*63,accel.z*63],
+                 notify: true
+               }
+             }
+           });
+         },200);
+       }, 2000);
+     };
+     NRF.on('connect',onConnect);
    }),
    "Back to Badge":Badge.badge
  };
