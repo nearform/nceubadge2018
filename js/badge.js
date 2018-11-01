@@ -1,6 +1,6 @@
 Badge = global.Badge||{};
 Badge.URL = "http://www.espruino.com";
-Badge.NAME = ["Nodeconf","2018"]; // iso8859-2 codepage
+Badge.NAME = ["Nodeconf","2018"]; // ISO10646-1 codepage
 Badge.settings = {
   allowScan:true,// Allow scanning?
   location:true, // Send anonymous location data (needed for clapometer)
@@ -239,8 +239,8 @@ Badge.drawCenter = (txt,title,big) => {
     g.setColor(1);
   }
   var l = txt.split("\n");
-  if (big) Badge.setBigFont();
-  var h = big?14:6;
+  if (big) Badge.setBigFont(g);
+  var h = big?10:6;
   l.forEach((s, i) => g.drawString(s, 64, 34+(i-(l.length-1)/2)*h));
   g.setFontBitmap();
   g.setFontAlign(-1,-1);
@@ -264,12 +264,28 @@ Badge.info = s => {
   Badge.pattern("info");  
   BTNS.forEach(p=>setWatch(Badge.badge,p));
 };
-// https://github.com/Tecate/bitmap-fonts/blob/master/bitmap/haxor/HaxorNarrow-15.bdf
-// iso8859 codepage
-Badge.setBigFont = ()=>{
-var font = atob("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AAAf+AACEAEQAIH/gAAAf+CACIAEIAIn/gAAAf+CACAAEIAIH/gAAAcAAGAED8QYAHAAAAAQAAgAR//CAAEAAAAAP/AgABEECIIDoQAPAAAAH+AEABQAEgAAgAAAACcAJEBSIEkgA/gAAACcApECSICkgA/gAAACcBJEBSIEkgA/gAAACcApEASICkgA/gAAAACFAET/4AAQAAgAAAD8AIEBQIEgQAhAAAAD8AIEAQOAgSAhAAAAD8BIEBQIEgQAhAAAAD8AJEBSIEkQA5AAAAD8AJEASOAkSA5AAAAD8ApEASICkQA5AAAAD8BJEBSIEkQA5AAAAACAIEBf4EAQAAgAAAACAoECf4CAQAAgAAAH8AQEAgIAggv/hgAAAAAH4AQIAgQEhAf/AQAAAAAf4AQAFAASAAD+AAAAf4EQAFAASAAD+AAAAPwAgQFAgSBAD8AAAAPwCgQJAgKBAD8AAAAPwCgQJAgKBAj8AAAAPwCgQBAgKBAD8AAAAf4EQAFAASAACAAAAAfwEAQUAgQCAH+AAAAfwAAQEAgQCAH+AAAAfwCAQIAgICAn+AAAAfwCAQAAgICAH+AAAAeDADYEBAQMAHgAAAAQAH/gBAkCBwECAAAA");
-var widths = atob("AwIGCAgICAMFBQYIAwYDBwcFBgYHBgYGBgYDAwYHBgcHBgYGBgYGBgYEBgYGBgYGBgYGBgYGBggGBgYEBwQGBwQGBgYGBgYHBgYGBgYGBgYGBgYGBgYGBgYGBgQCBAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAHCAYGBgAGBgYGAAYGBQYABgMGBgQABgYHBgAGBgYGBgYGBgYGBgYGBgYEBAYGBgYGBgYGAAYGBgYGBgYHBgYGBgYGBgYGBgYGBgYGBwcGBgYGBgYABgYGBgYGBg==");
-g.setFontCustom(font, 32, widths, 17);
+// https://raw.githubusercontent.com/Tecate/bitmap-fonts/master/bitmap/dylex/7x13.bdf
+// ISO10646-1 codepage
+Badge.setBigFont = g=>{
+var font = atob("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");
+var widths = atob("AwIEBgYIBwIEBAYGAwYCBgYGBgYHBgYGBgYCAwUGBQYIBwcHBwcGBwcEBgcGBwcHBgcHBwgHBwgHCAcEBgQGCAMGBgYGBgYGBgMFBgMIBgYGBgYGBgYGCAYGBgYCBggABwADBgQGBgYGBwcECAAHAAADAwUFBgYIBQgGBAgABggAAgYGCAgCBgQIBQYFAAgIBQYFBQMIBwQDBAUGBwcIBgcHBwcHBwgHBgYGBgQEBAQIBwcHBwcHBgcHBwcHCAYIBgYGBgYGCAYGBgYGAwMEBAYGBgYGBgYGBgYGBgYGBgY=");
+g.setFontCustom(font, 32, widths, 13);
+};
+// align=-1=left,0,1=right
+Badge.drawStringDbl = (txt,px,py,h,align)=>{
+  var g2 = Graphics.createArrayBuffer(128,h,2,{msb:true});
+  Badge.setBigFont(g2);
+  var w = g2.stringWidth(txt);
+  var c = (w+3)>>2;
+  g2.drawString(txt);
+  px -= (align+1)*w;
+  var img = {width:w*2,height:1,transparent:0,buffer:new ArrayBuffer(c)};
+  var a = new Uint8Array(img.buffer);
+  for (var y=0;y<h;y++) {    
+    a.set(new Uint8Array(g2.buffer,32*y,c));
+    g.drawImage(img,px,py+y*2);
+    g.drawImage(img,px,py+1+y*2);
+  }
 };
 // --------------------------------------------
 // Main menu
@@ -350,21 +366,9 @@ Badge.badge = ()=>{
 
   toggle=!toggle;
 
-  imgy++;
-  if (imgy>20)imgy=0;
-
-  g.clear();
-  // Draw the Name
-  Badge.setBigFont();
-  g.setFontAlign(0,0);
-  var l = Badge.NAME;
-  l.forEach((s, i) => g.drawString(s, 57, 34+(i-(l.length-1)/2)*14));
-  g.setFontAlign(-1,-1);
-  g.setFontBitmap();
-   
-  // Draw the hex image down the side
-  for (var y=-imgy;y<63;y+=20)g.drawImage(hexImage,115,y);
-
+  // v scroll for rhs image
+  imgy=(imgy+1)%21;
+  // Work out notifications
   var notify = []; 
   function addTalkInfo(m1,m2) {
     var msg1=Badge.bleData[m1], msg2=Badge.bleData[m2];
@@ -377,7 +381,16 @@ Badge.badge = ()=>{
   }   
   addTalkInfo(MSG.MSG_NOW1, MSG.MSG_NOW2);
   addTalkInfo(MSG.MSG_NEXT1, MSG.MSG_NEXT2);
-  
+
+  g.clear();
+  // Draw the Name
+  var y = 20 + notify.length*3; // y offset
+  var l = Badge.NAME;
+  l.forEach((s, i) => Badge.drawStringDbl(s, 57, y+(i-(l.length-1)/2)*20,14,0));
+   
+  // Draw the hex image down the side
+  for (var y=-imgy;y<63;y+=20)g.drawImage(hexImage,115,y);
+
   // Draw notifications
   if (notify.length) {
     var h = notify.length*6+2;
@@ -412,7 +425,6 @@ Badge.badge = ()=>{
  // Start clapometer
  Badge.setClapometer(1);
 };
-
 // --------------------------------------------
 // Badge Applications (you can add your own)
 Badge.apps["Map"] = function() {
@@ -843,7 +855,8 @@ exit.
 Name: Pixl.js ${Badge.getName()}`,"Bluetooth");   
    function exit() {
      Badge.connectable = false;
-     NRF.updateBLE();
+     Badge.updateBLE();
+     digitalWrite([VIBL,VIBR],0);
      Badge.apps["Bluetooth Workshop"]();
    }
    BTNS.forEach(p=>setWatch(exit,p));
@@ -855,6 +868,8 @@ Name: Pixl.js ${Badge.getName()}`,"Bluetooth");
        "7b340000-105b-2b38-3a74-2932f884e90e" : {
          "7b340001-105b-2b38-3a74-2932f884e90e" : {
            writable : true,
+           value : [0,0,0],
+           maxLen : 3,
            onWrite : function(evt) {
              var d = new Uint8Array(evt.data);
              var c = [0|d[0],0|d[1],0|d[2]];
@@ -866,26 +881,28 @@ Name: Pixl.js ${Badge.getName()}`,"Bluetooth");
          },
          "7b340002-105b-2b38-3a74-2932f884e90e" : {
            writable : true,
+           value : [0,0],
+           maxLen : 2,
            onWrite : function(evt) {
              var d = new Uint8Array(evt.data);
-             analogWrite(LED.VIBL,(0|d[0])/255);
-             analogWrite(LED.VIBR,(0|d[1])/255);
+             analogWrite(VIBL,(0|d[0])/255);
+             analogWrite(VIBR,(0|d[1])/255);
              Terminal.println("BUZZ "+d);
            }
          }
        }
-     });
-   },{uart:false}),
+     },{uart:false});
+   }),
    "Accelerometer":()=>ble(()=>{
      NRF.setServices({
        "7b340000-105b-2b38-3a74-2932f884e90e" : {
          "7b340003-105b-2b38-3a74-2932f884e90e" : {
            readable : true,
            notify : true,
-           value : [0,0,0],
+           value : [0,0,0]           
          }
        }
-     });
+     },{uart:false});
      setInterval(()=>{
        var accel = NC.accel();
        try {
@@ -900,7 +917,7 @@ Name: Pixl.js ${Badge.getName()}`,"Bluetooth");
        } catch (e) {
        }
      },200);
-   },{uart:false}),
+   }),
    "Back to Badge":Badge.badge
  };
  Badge.reset();
@@ -995,6 +1012,8 @@ NRF.on('disconnect',addr=>Terminal.println("BLE disconnected"));
 // --------------------------------------------
 // Run at boot...
 function onInit() { 
+ // force highest connection interval - powere usage not too big a deal
+ NRF.setConnectionInterval(7.5);
  Badge.drawCenter("Hold down BTN4 to\nenable connection.");
  // buzz after a delay to give stuff like the accelerometer a chance to init
  setTimeout(function() {
@@ -1020,7 +1039,7 @@ function onInit() {
      loadSettings();
      //NRF.sleep();
    } else reset();
- },1500);
+ },2500);
 }
 function loadSettings() {  
   var firstLoad = false;
@@ -1036,3 +1055,5 @@ function loadSettings() {
   if (firstLoad) Badge.apps.Privacy(true);
   else Badge.badge();
 }
+
+
