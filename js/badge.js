@@ -1,6 +1,6 @@
 Badge = global.Badge||{};
-Badge.URL = "http://www.espruino.com";
-Badge.NAME = ["Nodeconf","2018"]; // ISO10646-1 codepage
+Badge.URL = Badge.URL||"http://www.espruino.com";
+Badge.NAME = Badge.NAME||["Nodeconf","2018"]; // ISO10646-1 codepage
 Badge.settings = {
   allowScan:true,// Allow scanning?
   location:true, // Send anonymous location data (needed for clapometer)
