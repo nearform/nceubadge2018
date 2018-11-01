@@ -82,8 +82,9 @@ Badge.bleState = BADGE_STATE.SLEEPY;
 Badge.bleRoom = 0; // ROOMS.UNKNOWN
 // Should the badge be connectable?
 Badge.connectable = false;
-// A list of old alerts we've received, so we don't do the same ones again
+// A list of old alerts/info we've received, so we don't do the same ones again
 Badge.oldAlerts = [];
+Badge.oldInfo = [];
 // --------------------------------------------
 // Bluetooth scanning - usually only done from Badge.menu
 // Emit a BLEx event when the data received changes
@@ -209,15 +210,17 @@ Badge.on('BLE'+MSG.CONTROL, msgData=>{
   }
 });
 Badge.on('BLE'+MSG.MSG_ALERT, msgData=>{
-  // don't display the same alert twice
   if (Badge.oldAlerts.indexOf(msgData)>=0)
     return;
   Badge.oldAlerts = Badge.oldAlerts.slice(-2);
   Badge.oldAlerts.push(msgData);
-  // actually do alert
   Badge.alert(msgData);
 });
 Badge.on('BLE'+MSG.MSG_INFO, msgData=>{
+  if (Badge.oldInfo.indexOf(msgData)>=0)
+    return;
+  Badge.oldInfo = Badge.oldInfo.slice(-2);
+  Badge.oldInfo.push(msgData);  
   Badge.info(msgData);
 });
 Badge.on('BLE'+MSG.LED_COLOR, msgData=>{
