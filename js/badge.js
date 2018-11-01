@@ -1019,7 +1019,9 @@ Badge.pattern = name => {
 NRF.on('connect',addr=>{
   Terminal.println(addr+" connected");
   // force highest connection interval - powere usage not too big a deal
- NRF.setConnectionInterval(7.5);
+  setTimeout(function() {
+    try {NRF.setConnectionInterval(7.5); } catch (e) {}
+  },1000);
 });
 NRF.on('disconnect',addr=>Terminal.println("BLE disconnected"));
 // --------------------------------------------
