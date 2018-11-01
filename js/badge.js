@@ -1009,13 +1009,16 @@ Badge.pattern = name => {
 
 // --------------------------------------------
 // Run at boot...
-NRF.on('connect',addr=>Terminal.println(addr+" connected"));
+NRF.on('connect',addr=>{
+  Terminal.println(addr+" connected");
+  // force highest connection interval - powere usage not too big a deal
+ NRF.setConnectionInterval(7.5);
+});
 NRF.on('disconnect',addr=>Terminal.println("BLE disconnected"));
 // --------------------------------------------
 // Run at boot...
 function onInit() { 
- // force highest connection interval - powere usage not too big a deal
- NRF.setConnectionInterval(7.5);
+ 
  Badge.drawCenter("Hold down BTN4 to\nenable connection.");
  // buzz after a delay to give stuff like the accelerometer a chance to init
  setTimeout(function() {
