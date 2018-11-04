@@ -487,7 +487,8 @@ Badge.apps["Map"] = function() {
   BTNS.forEach(p=>setWatch(Badge.menu,p));
 };
 Badge.apps["Backlight"] = ()=>{
- var menu = { "": { "title": "-- Select Backlight --" } };
+ var menu = { "": { "title": "-- Select Backlight --" },
+   "Back to Badge":Badge.badge };
  function bl(i) {
    return function() {
      Badge.defaultPattern=i;
@@ -496,7 +497,6 @@ Badge.apps["Backlight"] = ()=>{
  }
  menu.off=bl();
  for (var i in Badge.patterns) menu[i]=bl(i);
-  menu["Back to Badge"]=Badge.badge;
  Badge.defaultPattern=undefined;
  Badge.reset();
  Pixl.menu(menu);
