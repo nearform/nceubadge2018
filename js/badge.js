@@ -254,7 +254,7 @@ Badge.alert = s => {
   BTNS.forEach(p=>setWatch(Badge.badge,p));
   function bzzt() {
     digitalPulse(VIBL,1,100);
-    digitalPulse(VIBR,0,[100,100]);
+    digitalPulse(VIBR,0,[120,100]);
   }
   bzzt();
   setInterval(bzzt,10000);
