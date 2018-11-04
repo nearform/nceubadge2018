@@ -8,6 +8,7 @@ Quick Links
 * [Espruino Pixl.js info](http://www.espruino.com/Pixl.js)
 * [Monday's Bluetooth Workshop](https://gfwilliams.github.io/workshop-nodeconfeu2018/)
 * [Returning your badge to normal](#returning-to-standard)
+* [The Badge's default firmare](js/badge.js)
 
 
 Getting Started
