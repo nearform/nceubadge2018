@@ -34,6 +34,14 @@ BTN4 |___________________________| BTN3
 There is an on/off slider switch on th rear of the badge just by the USB connector
 (which is used for charging only).
 
+Bugs!
+-----
+
+On some of the badges, the vibration caused by the vibration motors during startup can
+cause the LED controller to stop working. If when you power your badge on it *doesn't* go
+through all the colours of the rainbow, power it on with your thumbs over the vibration motors
+at the bottom left and right of the screen.
+
 Connecting
 ----------
 
