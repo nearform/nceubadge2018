@@ -10,7 +10,7 @@ Badge.settings = {
 Badge.apps = Badge.apps||{};
 Badge.patterns = Badge.patterns||{};
 
-var NC = require("NC");
+var NC = require("nodeconfeu2018");
 var BTNS = [BTN1,BTN2,BTN3,BTN4];
 // Message types
 var MSG = {
@@ -99,7 +99,7 @@ Badge.scanOnce = (on) => {
 "b8:27:eb:8e:dc:f0 public",
 "b8:27:eb:fb:ad:f7 public"
   ];
-  
+
   on&=Badge.settings.allowScan;
   if (Badge.scanTimeout) {
     clearTimeout(Badge.scanTimeout);
@@ -118,7 +118,7 @@ Badge.scanOnce = (on) => {
         Badge.emit("BLE"+k,v);
       }
     }
-  }, 1000);  
+  }, 1000);
   NRF.setScan(d=>{var m=d.manufacturerData;
 if (WL.indexOf(d.id)>=0&&m)b[m[0]]=m;},
   { filters: [{ manufacturerData:{0x0590:{}} }] });
@@ -142,7 +142,7 @@ Badge.updateBLE = ()=>{
   if (!Badge.settings.location) {
     if (Badge.connectable) NRF.wake();
     else NRF.sleep();
-  }  
+  }
 };
 Badge.setClapometer = (on)=>{
   on&=Badge.settings.clap;
@@ -150,10 +150,10 @@ Badge.setClapometer = (on)=>{
   delete Badge.clapWatch;
   if (Badge.clapInterval) clearInterval(Badge.clapInterval);
   delete Badge.clapInterval;
-  
+
   Badge.clapCurrent=0;
   Badge.clapLast=0;
-  
+
   var i = NC.i2c;
   if (on) {
     i.wa(0x20,0x9F); // 800Hz
@@ -190,7 +190,7 @@ Badge.setClapometer = (on)=>{
   if (!Badge.settings.location) {
     if (Badge.connectable) NRF.wake();
     else NRF.sleep();
-  }  
+  }
 };
 // --------------------------------------------
 // Handle badge events
@@ -218,7 +218,7 @@ Badge.on('BLE'+MSG.MSG_INFO, msgData=>{
   if (Badge.oldInfo.indexOf(msgData)>=0)
     return;
   Badge.oldInfo = Badge.oldInfo.slice(-2);
-  Badge.oldInfo.push(msgData);  
+  Badge.oldInfo.push(msgData);
   Badge.info(msgData);
 });
 Badge.on('BLE'+MSG.LED_COLOR, msgData=>{
@@ -250,7 +250,7 @@ Badge.drawCenter = (txt,title,big) => {
 Badge.alert = s => {
   Badge.reset();
   Badge.drawCenter(s,"Alert!",true/*big*/);
-  Badge.pattern("red");  
+  Badge.pattern("red");
   BTNS.forEach(p=>setWatch(Badge.badge,p));
   function bzzt() {
     digitalPulse(VIBL,1,100);
@@ -262,7 +262,7 @@ Badge.alert = s => {
 Badge.info = s => {
   Badge.reset();
   Badge.drawCenter(s,"Information",true/*big*/);
-  Badge.pattern("info");  
+  Badge.pattern("info");
   BTNS.forEach(p=>setWatch(Badge.badge,p));
   // keep scanning in case there's an alert
   Badge.scan(1);
@@ -291,7 +291,7 @@ Badge.drawStringDbl = (txt,px,py,h,align)=>{
   px -= (align+1)*w;
   var img = {width:w*2,height:1,transparent:0,buffer:new ArrayBuffer(c)};
   var a = new Uint8Array(img.buffer);
-  for (var y=0;y<h;y++) {    
+  for (var y=0;y<h;y++) {
     a.set(new Uint8Array(g2.buffer,32*y,c));
     g.drawImage(img,px,py+y*2);
     g.drawImage(img,px,py+1+y*2);
@@ -324,7 +324,7 @@ Name: Pixl.js ${Badge.getName()}
 MAC: ${NRF.getAddress()}`);
    g.flip();
    wait(() => { Badge.connectable = false; Badge.updateBLE(); Badge.menu(); });
-   Badge.connectable = true; 
+   Badge.connectable = true;
    Badge.updateBLE();
   },
  };
@@ -333,12 +333,12 @@ MAC: ${NRF.getAddress()}`);
  Pixl.menu(mainmenu);
 };
 Badge.badge = ()=>{
- Badge.reset(); 
+ Badge.reset();
  var timeout;
  var lastTime = Date.now();
  var toggle = false;
  var imgy = 0;
-  
+
  var hexImage = Graphics.createImage(`
       ######
      #
@@ -362,13 +362,13 @@ Badge.badge = ()=>{
      #
 `);
  hexImage.transparent = 0;
-  
+
  function getTimeChar(ch) {
    var min = ch.charCodeAt()*10;
    return ((min/60)|0)+":"+("0"+min%60).substr(-2);
  }
 
-  
+
  function draw(n) {
   var t = Date.now();
   var timeDiff = t-lastTime;
@@ -379,7 +379,7 @@ Badge.badge = ()=>{
   // v scroll for rhs image
   imgy=(imgy+1)%21;
   // Work out notifications
-  var notify = []; 
+  var notify = [];
   function addTalkInfo(m1,m2) {
     var msg1=Badge.bleData[m1], msg2=Badge.bleData[m2];
     if (msg1) {
@@ -388,7 +388,7 @@ Badge.badge = ()=>{
         msg = getTimeChar(msg2)+": "+msg2.substr(1);
       notify.push(msg);
     }
-  }   
+  }
   addTalkInfo(MSG.MSG_NOW1, MSG.MSG_NOW2);
   addTalkInfo(MSG.MSG_NEXT1, MSG.MSG_NEXT2);
 
@@ -397,7 +397,7 @@ Badge.badge = ()=>{
   var y = 20 + notify.length*3; // y offset
   var l = Badge.NAME;
   l.forEach((s, i) => Badge.drawStringDbl(s, 57, y+(i-(l.length-1)/2)*20,14,0));
-   
+
   // Draw the hex image down the side
   for (var y=-imgy;y<63;y+=20)g.drawImage(hexImage,115,y);
 
@@ -422,7 +422,7 @@ Badge.badge = ()=>{
   // now write to the screen
   g.flip();
   var delay = 1000;
-  if (timeout) clearTimeout(timeout);  
+  if (timeout) clearTimeout(timeout);
   timeout = setTimeout(e => { timeout = undefined; draw(1); }, delay);
  }
  draw(0);
@@ -460,23 +460,23 @@ Badge.apps["Map"] = function() {
 ["Maginnes 1",28,33],// 12,
 ["Reception",92,26] // 13
   ];
-  
+
   Badge.reset();
   Badge.scan(1); // ensure up to date data
-  
+
   var toggle = false;
   function draw() {
     g.clear();
     g.drawImage(mapImg);
-    
+
     var room = ROOMS[Badge.bleRoom];
     if (room==undefined) room=["Unknown"];
     g.setFontAlign(0,-1);
     g.drawString(room[0],64,0);
     g.setFontAlign(-1,-1);
-    
+
     toggle = !toggle;
-    if (room.length>1) {      
+    if (room.length>1) {
       if (toggle) g.fillCircle(room[1],room[2], 5);
       else g.drawCircle(room[1],room[2], 5);
     }
@@ -512,7 +512,7 @@ Badge.apps["Privacy"] = firstRun=>{
  if (firstRun) menu.Skip=Badge.badge;
  menu["Send Anon. Location : "+(Badge.settings.location?"Yes":"No")]=toggle("location");
  menu["Get Alerts/Info : "+(Badge.settings.allowScan?"Yes":"No")]=toggle("allowScan");
- menu["Clapometer : "+(Badge.settings.clap?"Yes":"No")]=toggle("clap");  
+ menu["Clapometer : "+(Badge.settings.clap?"Yes":"No")]=toggle("clap");
  menu[firstRun?"Continue":"Back to Badge"]=()=>{
    require("Storage").write("settings", Badge.settings);
    Badge.badge();
@@ -733,14 +733,14 @@ Badge.apps["Flappy Bird"] = () => {
  Badge.reset();
  var SPEED = 0.5;
  var BIRDIMG = Graphics.createImage(`
- 
+
  ####
 #    #
 # ### #
 # #  #
 #    #
  ####
- 
+
 `);
  BIRDIMG.transparent=0;
  var birdy, birdvy;
@@ -836,7 +836,7 @@ Badge.apps["Compass"] = ()=>{
    return {x:96+r*Math.sin(a),y:32-r*Math.cos(a)};
  }
  setInterval(()=>{
-   var m=NC.mag(); 
+   var m=NC.mag();
    min=op(m,min,Math.min);
    max=op(m,max,Math.max);
    var c = op(max,min,(a,b)=>(a+b)/2);//centre
@@ -864,7 +864,7 @@ Badge.apps["Bluetooth Workshop"] = ()=>{
 Press any button to
 exit.
 
-Name: Pixl.js ${Badge.getName()}`,"Bluetooth");   
+Name: Pixl.js ${Badge.getName()}`,"Bluetooth");
    function exit() {
      if (onConnect) NRF.removeListener('connect',onConnect);
      Badge.connectable = false;
@@ -912,7 +912,7 @@ Name: Pixl.js ${Badge.getName()}`,"Bluetooth");
          "7b340003-105b-2b38-3a74-2932f884e90e" : {
            readable : true,
            notify : true,
-           value : [0,0,0]           
+           value : [0,0,0]
          }
        }
      },{uart:false});
@@ -1006,7 +1006,7 @@ Badge.patterns.rave=()=>{ var n=0;return [()=> {
 Badge.patterns.lightning=()=>{ var n=0;return [()=> {
   var d = new Uint8Array(18);
   r = (0|(50*Math.random()))*3;
-  d.set([255,255,255],r);// will silently set out of bounds most of the time 
+  d.set([255,255,255],r);// will silently set out of bounds most of the time
   NC.ledBottom(d); // hack to send to *all* LEDs
 },20];};
 // Actually display a pattern
@@ -1035,8 +1035,8 @@ NRF.on('connect',addr=>{
 NRF.on('disconnect',addr=>Terminal.println("BLE disconnected"));
 // --------------------------------------------
 // Run at boot...
-function onInit() { 
- 
+function onInit() {
+
  Badge.drawCenter("Hold down BTN4 to\nenable connection.");
  // buzz after a delay to give stuff like the accelerometer a chance to init
  setTimeout(function() {
@@ -1046,7 +1046,7 @@ function onInit() {
    digitalPulse(LED2,0,[500,100]);
  },100);
  // flashy lights!
- var hue = -0.2;  
+ var hue = -0.2;
  setTimeout(function anim() {
   hue+=0.1;
   var c = E.HSBtoRGB(hue,1,hue<=1,1);
@@ -1056,7 +1056,7 @@ function onInit() {
   if (hue<=1) setTimeout(anim,200);
  },250);
  // finally start up
- setTimeout(x=>{ 
+ setTimeout(x=>{
    if (!BTN4.read()) {
      NRF.nfcURL(Badge.URL);
      loadSettings();
@@ -1064,9 +1064,9 @@ function onInit() {
    } else reset();
  },2500);
 }
-function loadSettings() {  
+function loadSettings() {
   var firstLoad = false;
-  try { 
+  try {
     var o = JSON.parse(require("Storage").read("settings"));
     for (var i in o)
       if ("boolean"==typeof o[i])
@@ -1078,5 +1078,3 @@ function loadSettings() {
   if (firstLoad) Badge.apps.Privacy(true);
   else Badge.badge();
 }
-
-
