@@ -1053,8 +1053,6 @@ function onInit() {
  Badge.drawCenter("Hold down BTN4 to\nenable connection.");
  // buzz after a delay to give stuff like the accelerometer a chance to init
  setTimeout(function() {
-   digitalPulse(VIBL,1,100);
-   digitalPulse(VIBR,0,[500,100]);
    digitalPulse(LED1,1,100);
    digitalPulse(LED2,0,[500,100]);
  },100);
