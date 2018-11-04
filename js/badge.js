@@ -515,6 +515,7 @@ Badge.apps["Privacy"] = firstRun=>{
  menu["Clapometer : "+(Badge.settings.clap?"Yes":"No")]=toggle("clap");
  menu[firstRun?"Continue":"Back to Badge"]=()=>{
    require("Storage").write("settings", Badge.settings);
+   Badge.bleData = []; // clear BLE data
    Badge.badge();
  };
  Badge.reset();
