@@ -4,6 +4,7 @@ The Nodeconf 2018 Badge
 Quick Links
 -----------
 
+* [GitHub Repo](https://github.com/nearform/nceubadge2018)
 * [Espruino Bluetooth Getting Started](http://www.espruino.com/Quick+Start+BLE#pixljs)
 * [Espruino Pixl.js info](http://www.espruino.com/Pixl.js)
 * [Monday's Bluetooth Workshop](https://gfwilliams.github.io/workshop-nodeconfeu2018/)
@@ -34,6 +35,7 @@ BTN4 |___________________________| BTN3
 There is an on/off slider switch on th rear of the badge just by the USB connector
 (which is used for charging only).
 
+
 Bugs!
 -----
 
@@ -46,7 +48,8 @@ and it should spring back to life (updating the actual Espruino firmware can fix
   this, but if it's not happening often we wouldn't advise updating).
 * When you charge the badge via USB, the on/off switch on the back needs to be
 set to ON (with the sticky-out part nearest the USB connector) or the battery
-won't charge. 
+won't charge.
+
 
 Connecting
 ----------
@@ -278,6 +281,15 @@ Badge.apps["My App"] = ()=>{
 `);
 ```
 
+You can also do things like overwrite the built-in name,
+without having to overwrite the basic badge firmware.
+
+```
+require("Storage").write(".boot1",`
+Badge=global.Badge||{};
+Badge.NAME=["Hello","World"];
+`);
+```
 
 
 Soldering Stuff
