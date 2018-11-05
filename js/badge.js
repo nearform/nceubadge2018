@@ -976,17 +976,13 @@ Badge.patterns.rainbow=()=>{ var n=0;return [()=>{
   NC.ledTop(E.HSBtoRGB(n+0.4,1,1,1));
   NC.ledBottom(E.HSBtoRGB(n+0.5,1,1,1));
 },50];};
-Badge.patterns.hues=()=>{ var n=1000;var hues=[0,0.2,0.4];return [()=>{
-  n += 1;
-  if (n>10) {
-    hues=hues.map(Math.random);
-    n=0;
-  }
+Badge.patterns.hues=()=>{ var hues=[0,0.2,0.4];return [()=>{
+  hues=hues.map(Math.random);
   var c = E.HSBtoRGB(hues[0],1,1,1);
   NC.backlight(c.concat(c,c,c));
   NC.ledTop(E.HSBtoRGB(hues[1],1,1,1));
   NC.ledBottom(E.HSBtoRGB(hues[2],1,1,1));
-},50];};
+},500];};
 Badge.patterns.rave=()=>{ var n=0;return [()=> {
   n += 0.01;
   var d = new Uint8Array(18);
@@ -1060,7 +1056,7 @@ function onInit() {
  var hue = -0.2;
  setTimeout(function anim() {
   hue+=0.1;
-  var c = E.HSBtoRGB(hue,1,hue<=1,1);
+  var c = E.HSBtoRGB(hue,1,(hue<=1)?0.3:0,1);
   NC.backlight(c.concat(c,c,c));
   NC.ledTop(E.HSBtoRGB(hue,1,1,1));
   NC.ledBottom(E.HSBtoRGB(hue,1,1,1));

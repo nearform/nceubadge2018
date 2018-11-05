@@ -197,7 +197,7 @@ Just do something like:
 ```
 // LED patterns - each is [callback, period_in_ms]
 Badge.patterns.blue=()=>{ var n=0;return [()=>{
-  var c = [0,0,127];
+  var c = [127,0,0];
   NC.ledTop(c);
   NC.ledBottom(c);
   NC.backlight(c.concat(c,c,c));
