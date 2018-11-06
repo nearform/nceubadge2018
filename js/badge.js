@@ -39,6 +39,8 @@ Badge.reset = () => {
  clearWatch();
  Bluetooth.removeAllListeners();
  LoopbackB.removeAllListeners();
+ g.setRotation(0);
+ g.setFontBitmap();
  g.clear();
  g.flip();
  Badge.updateBLE();
@@ -393,6 +395,7 @@ Badge.badge = ()=>{
   addTalkInfo(MSG.MSG_NEXT1, MSG.MSG_NEXT2);
 
   g.clear();
+  g.setRotation((NC.accel().y<0)?2:0);
   // Draw the Name
   var y = 20 + notify.length*3; // y offset
   var l = Badge.NAME;
