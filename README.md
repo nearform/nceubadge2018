@@ -53,10 +53,15 @@ through all the colours of the rainbow, power it on with your thumbs over the vi
 at the bottom left and right of the screen.
 * If your badge stops animating while in badge mode, try just pressing a button
 and it should spring back to life (updating the actual Espruino firmware can fix
-  this, but if it's not happening often we wouldn't advise updating).
+  this - see [Updating Espruino](#updating-espruino) below).
 * When you charge the badge via USB, the on/off switch on the back needs to be
 set to ON (with the sticky-out part nearest the USB connector) or the battery
 won't charge.
+* If you're writing bits of code using `require("Storage").write('.boot...')`
+you may eventually get errors about not being able to write (the same can happen
+when trying to change settings). You can solve this by following the 
+[Returning your badge to normal](#returning-to-standard) instructions -
+but [Updating Espruino](#updating-espruino) can stop it happening again as well.
 
 
 Connecting
@@ -93,6 +98,7 @@ Returning to Standard
 * [Click this link](https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/badge.js) in Chrome
 * Change `Badge.NAME = ...` to `["Your", "Name"]` - each array element is a new line
 * Connect to your badge (see above)
+* If you're having trouble connecting, power your badge on with `BTN1` held down for ~10 seconds (until a message about code being erased is shown) - this will remove all code from the badge and make it connectable - ready for you to re-upload the badge code.
 * Optional: Type `require("Storage").eraseAll()` in the left hand side of the IDE. This will remove all data from nonvolatile storage.
 * Turn the `Save on Send` option in the `Communications` part of the Web IDE's settings to `Direct To Flash`
 * Upload the code
@@ -363,3 +369,20 @@ var wifi = require("ESP8266WiFi_0v25").connect(Serial1, function(err) {
 
 Check out [http://www.espruino.com/Internet](Espruino's page on Internet stuff)
 for more info.
+
+
+Updating Espruino
+-----------------
+
+The badges came with Espruino v2.00, but there have [been a few changes](https://github.com/espruino/Espruino/blob/master/ChangeLog)
+to Espruino since then that have fixed:
+
+* The badge pausing issue (caused by high Bluetooth LE traffic when scanning)
+* Filesystem issues when repeatedly calling `require("Storage").write`
+* Other issues
+
+To update Espruino, just [follow the Pixl.js instructions here](http://www.espruino.com/Pixl.js#firmware-updates)
+with the 'Cutting edge' build linked from [the firmware download page](http://www.espruino.com/Download#pixljs).
+
+This'll take a few minutes, and you then need to follow the steps for [Returning your badge to normal](#returning-to-standard) - so if you're fine with everything as it is, we'd recommend that you keep version 2.00 for now.
+
