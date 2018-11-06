@@ -11,6 +11,14 @@ Quick Links
 * [Returning your badge to normal](#returning-to-standard)
 * [The Badge's default firmare](js/badge.js)
 
+Please submit PRs for any apps or backlight patterns you created in:
+
+* [Apps](https://github.com/nearform/nceubadge2018/tree/master/apps)
+* [Patterns](https://github.com/nearform/nceubadge2018/tree/master/patterns)
+
+To add them to your badge, connect with the IDE then copy and paste
+them into the left-hand side of the IDE.
+
 
 Getting Started
 ---------------
