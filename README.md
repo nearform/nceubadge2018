@@ -5,7 +5,7 @@
 This was the top request during NodeConf EU so we've made it as easy as possible. To update the name displayed by the badge, do the following:
 
 - On the badge, press the top left button, then select "Make Connectable" from the menu and note the last four hex digits of the address of the badge
-- [Click here](https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/namechange.js) to open the Online IDE with the correct code
+- <a href="https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/namechange.js" target="_blank">Click this link</a> in Chrome to open the Online IDE with the correct code
 - In that code, edit the two fields "Bob" and "Loblaw" to whatever you need.
 - Click the yellow Connect button in the top left corner of the IDE
 - Click "Web Bluetooth" in the pop-up
@@ -85,7 +85,7 @@ they disable the ability to connect to them. To connect, you must do one of:
   will start your badge without loading any of the badge code.
 
 You can then use the Chrome web Browser on any Windows 10 or Mac OS device
-and go to [espruino.com/ide](https://www.espruino.com/ide) and you can connect.
+and go to <a href="https://www.espruino.com/ide" target="_blank">espruino.com/ide</a> and you can connect.
 You're looking for a device called `Pixl abcd` where `abcd` are the last 4
 characters of the MAC address shown on the Badge's screen.
 
@@ -131,7 +131,7 @@ Badge.apps["My App"]();
 
 ## Returning to Standard
 
-- [Click this link](https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/badge.js) in Chrome
+- <a href="https://www.espruino.com/ide/?codeurl=https://raw.githubusercontent.com/nearform/nceubadge2018/master/js/badge.js" target="_blank">Click this link</a> in Chrome
 - Change `Badge.NAME = ...` to `["Your", "Name"]` - each array element is a new line
 - Connect to your badge (see above)
 - If you're having trouble connecting, power your badge on with `BTN1` held down for ~10 seconds (until a message about code being erased is shown) - this will remove all code from the badge and make it connectable - ready for you to re-upload the badge code.
