@@ -1,7 +1,7 @@
-// TODO: Clock to switch off top/bottom LEDs and move to very dim backlight between 8pm and 8am
-// TODO: espruino --minify --board PIXLJS ck.js --config MODULE_AS_FUNCTION=true -o cko.js
+// Turn your NodeConf EU 2018 Badge into a lovely Deskclock
+// Left buttons up/down for LED colour. Right buttons up/down for backlight colour
+// espruino --minify --board PIXLJS flashclock.js --config MODULE_AS_FUNCTION=true -o flashclock-min.js
 // TODO: Final page on nodebadge.org/clock
-// TODO: Turn off Bluetooth discoverability
 // reset();
 // require("Storage").eraseAll();
 
