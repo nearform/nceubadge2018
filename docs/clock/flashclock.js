@@ -1,8 +1,9 @@
-// TODO: Need to add soft backlight code here
-// TODO: Also add lightsensor reducing brightness at night
-// TODO: Apparently other LEDs will mess up sensor so why not use time of day algorithm for brightness
+// TODO: Clock to switch off top/bottom LEDs and move to very dim backlight between 8pm and 8am
 // TODO: espruino --minify --board PIXLJS ck.js --config MODULE_AS_FUNCTION=true -o cko.js
-// TODO: Landing page on nodebadge.org linking to various web bluetooth pages
+// TODO: Final page on nodebadge.org/clock
+// TODO: Turn off Bluetooth discoverability
+// reset();
+// require("Storage").eraseAll();
 
 // The last time that we displayed
 var lastTime = "00:00";
@@ -202,8 +203,107 @@ function showTime() {
     lastTime = t;
 }
 
+function backlight(a) { // 12 element array
+    if (!a) a = new Uint8Array(12);
+    i2c.wl(7, a); i2c.wl(0x16, 0x00);
+}
+
+function ledTop(a) { // 3 element array
+    if (!a) a = new Uint8Array(3);
+    i2c.wl(4, a); i2c.wl(0x16, 0x00);
+}
+
+function ledBottom(a) { // 3 element array
+    if (!a) a = new Uint8Array(3);
+    i2c.wl(1, a); i2c.wl(0x16, 0x00);
+}
+
+
+var i2c = new I2C();
+
+
+const backlightOptions = {
+    OFF: [0, 0, 0],
+    DIM: [31, 31, 31],
+    BRIGHT: [80, 80, 80],
+    VERYBRIGHT: [127, 127, 127],
+    PINK: [50, 0, 127],
+    BLUE: [127, 0, 0]
+};
+
+const ledOptions = {
+    OFF: [0, 0, 0],
+    DIMWHITE: [31, 31, 31],
+    BRIGHTWHITE: [80, 80, 80],
+    VERYBRIGHTWHITE: [127, 127, 127],
+    DIMPINK: [12, 0, 31],
+    BRIGHTPINK: [30, 0, 80],
+    VERYBRIGHTPINK: [50, 0, 127],
+    DIMBLUE: [31, 0, 0],
+    BRIGHTBLUE: [80, 0, 0],
+    VERYBRIGHTBLUE: [127, 0, 0]
+};
+
+const backlightSettings = [backlightOptions.OFF, backlightOptions.DIM, backlightOptions.BRIGHT, backlightOptions.VERYBRIGHT, backlightOptions.PINK, backlightOptions.BLUE];
+const ledSettings = [ledOptions.OFF, ledOptions.DIMWHITE, ledOptions.BRIGHTWHITE, ledOptions.VERYBRIGHTWHITE, ledOptions.DIMPINK, ledOptions.BRIGHTPINK, ledOptions.VERYBRIGHTPINK, ledOptions.DIMBLUE, ledOptions.BRIGHTBLUE, ledOptions.VERYBRIGHTBLUE];
+var backlightIndex = 1;
+var ledIndex = 1;
 
 function onInit() {
+
+    // SN3218 LED driver
+    i2c.wl = function (reg, data) { // write to LEDs
+        this.writeTo(84, reg, data);
+    };
+
+    i2c.setup({ sda: A4, scl: A5 });
+    D2.set(); // turn on LED
+    i2c.wl(0, 1); // no shutdown
+    i2c.wl(0x13, [0x3F, 0x3F, 0x3F]); // led bank 1,2,3
+
+    // White backlight
+    // 127 is very bright 
+    // 31 is a good in between 
+    backlight(backlightSettings[backlightIndex].concat(backlightSettings[backlightIndex], backlightSettings[backlightIndex], backlightSettings[backlightIndex]));
+
+    // Set LEDs
+    ledTop(ledSettings[ledIndex]);
+    ledBottom(ledSettings[ledIndex]);
+
+    setWatch(function () {
+        // TOP LEFT
+        // NEXT
+        ledIndex = (ledIndex + 1) % ledSettings.length;
+        // Set LEDs
+        ledTop(ledSettings[ledIndex]);
+        ledBottom(ledSettings[ledIndex]);
+    }, BTN1, { edge: "rising", debounce: 50, repeat: true });
+
+    setWatch(function () {
+        // TOP RIGHT
+        // NEXT
+        backlightIndex = (backlightIndex + 1) % backlightSettings.length;
+        // Set Backlight
+        backlight(backlightSettings[backlightIndex].concat(backlightSettings[backlightIndex], backlightSettings[backlightIndex], backlightSettings[backlightIndex]));
+    }, BTN2, { edge: "rising", debounce: 50, repeat: true });
+
+    setWatch(function () {
+        // BOTTOM RIGHT
+        //PREV
+        backlightIndex = (backlightIndex == 0) && backlightSettings.length - 1 || backlightIndex - 1
+        // Set backlight
+        backlight(backlightSettings[backlightIndex].concat(backlightSettings[backlightIndex], backlightSettings[backlightIndex], backlightSettings[backlightIndex]));
+    }, BTN3, { edge: "rising", debounce: 50, repeat: true });
+
+    setWatch(function () {
+        // BOTTOM LEFT
+        //PREV
+        ledIndex = (ledIndex == 0) && ledSettings.length - 1 || ledIndex - 1
+        // Set LEDs
+        ledTop(ledSettings[ledIndex]);
+        ledBottom(ledSettings[ledIndex]);
+    }, BTN4, { edge: "rising", debounce: 50, repeat: true });
+
     // Update time once a second
     setInterval(showTime, 1000);
 
