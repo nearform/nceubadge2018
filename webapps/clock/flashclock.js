@@ -1,9 +1,25 @@
+//
 // Turn your NodeConf EU 2018 Badge into a lovely Deskclock
+//
 // Left buttons up/down for LED colour. Right buttons up/down for backlight colour
-// espruino --minify --board PIXLJS flashclock.js --config MODULE_AS_FUNCTION=true -o flashclock-min.js
-// TODO: Final page on nodebadge.org/clock
-// reset();
-// require("Storage").eraseAll();
+//
+/* Flashing Instructions
+1. Change the "Save on Send" option in the Communications part of the Web IDE’s settings to "Direct To Flash (Execute code at boot)"
+2. Connect to your badge in the Web IDE
+3. Type 
+     reset(); 
+   in the REPL on the LHS of the Web IDE
+4. Type
+     require("Storage").eraseAll();
+   in the REPL on the LHS of the Web IDE
+5. Click the upload button and watch the upload progress bar
+6. Once complete, the badge should reboot and display the correct time
+7. Return the "Save on Send" option in the Communications part of the Web IDE’s settings to "To RAM" so you don’t accidentally overwrite the code in the future.
+8. In the future go to https://nodebadge.org/clock if you ever need to update the time with a few clicks
+*/
+//
+// Notes to self:
+// TODO: espruino --minify --board PIXLJS flashclock.js --config MODULE_AS_FUNCTION=true -o flashclock-min.js
 
 // The last time that we displayed
 var lastTime = "00:00";
