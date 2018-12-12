@@ -2,7 +2,7 @@
 
 ## Changing your name on the badge
 
-This was the top request during NodeConf EU so we've made it as easy as possible. Just [go here](https://nearform.github.io/nceubadge2018/namechanger.html) and follow the simple instructions.
+This was the top request during NodeConf EU so we've made it as easy as possible. Just [go here](https://nodebadge.org/name/) and follow the simple instructions.
 
 ## Quick Links
 
