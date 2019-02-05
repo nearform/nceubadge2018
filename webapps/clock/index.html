@@ -50,23 +50,20 @@
                         <li>Change the "Save on Send" option in the Communications part of the Web IDE’s settings
                             to
                             "Direct To Flash (Execute code at boot)"</li>
-                        <li>Connect to your badge in the Web IDE</li>
+                        <li>Also make sure "Set Current Time" is ticked beneath that</li>   
+                        <li>Connect to your badge in the Web IDE (yellow icon in top left of IDE)</li>
                         <li>Type
-                            `reset();`
+                            reset();
                             in the REPL on the LHS of the Web IDE</li>
                         <li>Type
-                            `require("Storage").eraseAll();`
+                            require("Storage").eraseAll();
                             in the REPL on the LHS of the Web IDE</li>
-                        <li>Click the upload button and watch the upload progress bar</li>
+                        <li>Click the Upload button (third icon down in middle of IDE) and watch the upload progress bar</li>
                         <li>Once complete, the badge should reboot and display the correct time</li>
                         <li>Return the "Save on Send" option in the Communications part of the Web IDE’s settings to
                             "To RAM" so you don’t
                             accidentally overwrite the code in the future.</li>
-                        <li>Click the Upload button</li>
-                        <li>Once complete, after approx 30-60 seconds, return the "Save on Send" option in the
-                            Communications part of the Web IDE’s settings to
-                            "To RAM" so you don’t accidentally overwrite the code in the future.
-                        </li>
+                       
                     </ol>
                     <h2>Or Option 3 - Re-flash a badge-clock back to stock NodeConf code</h2>
                     <p>If you previously chose Option 1 but now want to go back to the standard NodeConf code, do the
